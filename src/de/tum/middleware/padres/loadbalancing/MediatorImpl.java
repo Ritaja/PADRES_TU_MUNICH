@@ -1,13 +1,11 @@
-package loadBalancing;
+package de.tum.middleware.padres.loadbalancing;
 
 import ca.utoronto.msrg.padres.client.Client;
 import ca.utoronto.msrg.padres.client.ClientConfig;
 import ca.utoronto.msrg.padres.client.ClientException;
-import ca.utoronto.msrg.padres.common.comm.CommSystem;
 import ca.utoronto.msrg.padres.common.message.Message;
 import ca.utoronto.msrg.padres.common.message.parser.MessageFactory;
 import ca.utoronto.msrg.padres.common.util.CommandLine;
-import ca.utoronto.msrg.padres.tools.guiclient.GUIClient;
 
 public class MediatorImpl extends Client implements Runnable
 {
@@ -41,6 +39,7 @@ public class MediatorImpl extends Client implements Runnable
 	public static void main(String[] args) {
 
 		try {
+			//String comStr = "-i ClientB -b socket://localhost:1100/BrokerA";
 			CommandLine cmdLine = new CommandLine(ClientConfig.getCommandLineKeys());
 			cmdLine.processCommandLine(args);
 			String configFile = cmdLine.getOptionValue(ClientConfig.CLI_OPTION_CONFIG_FILE,
