@@ -3,6 +3,7 @@ package de.tum.middleware.padres.loadbalancing;
 import ca.utoronto.msrg.padres.client.Client;
 import ca.utoronto.msrg.padres.client.ClientException;
 import ca.utoronto.msrg.padres.common.comm.CommSystem;
+import ca.utoronto.msrg.padres.common.message.parser.MessageFactory;
 
 public class MediatorImpl extends Client implements Runnable
 {
@@ -25,6 +26,7 @@ public class MediatorImpl extends Client implements Runnable
 			String uri ="";
 			CommSystem commSys = new CommSystem();
 			commSys.createListener(uri);
+			mediator.subscribe(MessageFactory.createSubscriptionFromString("[class,eq,BROKER_INFO]"));
 			
 			
 		} catch (Exception e) {
