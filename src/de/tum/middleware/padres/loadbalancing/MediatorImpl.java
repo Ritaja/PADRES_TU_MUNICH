@@ -51,7 +51,8 @@ public class MediatorImpl extends Client implements Runnable
 
 			MediatorImpl mediator = new MediatorImpl(userConfig);
 			System.out.println("Mediator created : " + mediator.clientID);
-			mediator.subscribe(MessageFactory.createSubscriptionFromString("[class,eq,'temp']"));
+			//mediator.subscribe(MessageFactory.createSubscriptionFromString("[class,eq,'temp']"));
+			mediator.subscribe(MessageFactory.createSubscriptionFromString("[class,eq,BROKER_INFO]"));
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
