@@ -140,7 +140,6 @@ public class SystemMonitor extends Thread {
 	private QueueTimeManager queueTimeManager;
 
 	// private Hashtable timeOfEnqueue;
-	// private Hashtable timeOfDequeue;
 	protected long totalQueueTime;
 
 	protected long totalMatchTime;
@@ -255,6 +254,7 @@ public class SystemMonitor extends Thread {
 			advertiseTraceroute();
 
 			systemMonitorLogger.debug("Starting BrokerInfoPublisher.");
+			System.out.println("SystemMonitor >> run >> Starting BrokerInfoPublisher.");
 			// Start up the automatic broker info publisher
 			brokerInfoPublisher = new BrokerInfoPublisher(brokerCore);
 			brokerInfoPublisher.start();
@@ -289,7 +289,13 @@ public class SystemMonitor extends Thread {
 						}
 						int numberOfNeighbours = ((Set) brokerInfo.get(NEIGBOURS)).size();
 						int numberOfClients = ((Set) brokerInfo.get(CLIENTS)).size();
+						
 						performanceLogger.debug(averageMatchTime + "      " + averageQueueTime
+								+ "      " + incomingPubMsgRate + "      " + incomingControlMsgRate
+								+ "      " + freeMemory + "      " + numberOfAdvs + "      "
+								+ numberOfSubs + "      " + numberOfNeighbours + "      "
+								+ numberOfClients);
+						System.out.println(averageMatchTime + "      " + averageQueueTime
 								+ "      " + incomingPubMsgRate + "      " + incomingControlMsgRate
 								+ "      " + freeMemory + "      " + numberOfAdvs + "      "
 								+ numberOfSubs + "      " + numberOfNeighbours + "      "
@@ -298,7 +304,7 @@ public class SystemMonitor extends Thread {
 				}
 			};
 			Timer performanceLogtimer = new Timer(log_interval, logPerformanceTaskPerformer);
-			performanceLogtimer.start();
+			//performanceLogtimer.start();
 		}
 
 		// we have to wait sometime for the timer thread is fully started. If
@@ -318,6 +324,7 @@ public class SystemMonitor extends Thread {
 	 */
 	public void waitUntilStarted() throws InterruptedException {
 		synchronized (started_lock) {
+			System.out.println("waitUntilStarted ......");
 			while (started == false) {
 				started_lock.wait();
 			}
@@ -335,6 +342,7 @@ public class SystemMonitor extends Thread {
 	 * We want to subscribe to all messages with class equal to BROKER_MONITOR
 	 */
 	private void sendSubscriptionForMsgQueue() {
+		System.out.println("SystemMonitor >> sendSubscriptionForMsgQueue >> creatingSubscription");
 		Subscription monitorSub;
 		try {
 			monitorSub = MessageFactory.createSubscriptionFromString("[class,eq," + MESSAGE_CLASS
@@ -355,6 +363,7 @@ public class SystemMonitor extends Thread {
 	 * against the advertisement problem (see above)
 	 */
 	private void sendSubscriptionForNetworkDiscovery() {
+		System.out.println("SystemMonitor >> sendSubscriptionForNetworkDiscovery >> creatingSubscription");
 		Subscription sub;
 		try {
 			sub = MessageFactory.createSubscriptionFromString("[class,eq,NETWORK_DISCOVERY]");
@@ -370,6 +379,7 @@ public class SystemMonitor extends Thread {
 	}
 
 	public void sendSubscriptionForGlobalFD() {
+		System.out.println("SystemMonitor >> sendSubscriptionForGlobalFD >> creatingSubscription");
 		Subscription sub;
 		try {
 			sub = MessageFactory.createSubscriptionFromString("[class,eq,GLOBAL_FD],[flag,isPresent,'TEXT']");
@@ -510,11 +520,11 @@ public class SystemMonitor extends Thread {
 	 */
 	private void advertiseBrokerInfo() {
 		advertisedBrokerInfo = true;
-
 		Advertisement advertisement;
 		try {
 			advertisement = MessageFactory.createAdvertisementFromString("[class,eq,BROKER_INFO],[brokerID,eq,'"
 					+ brokerCore.getBrokerID() + "']");
+			System.out.println("SystemMonitor >> advertiseBrokerInfo >> advertisement : " + advertisement);
 		} catch (ParseException e) {
 			exceptionLogger.error(e.getMessage());
 			return;
@@ -869,14 +879,44 @@ public class SystemMonitor extends Thread {
 	 */
 	private PublicationMessage makeInfoPubMsg(Serializable payload) throws ParseException {
 		// Make the publication
-		Publication pub = MessageFactory.createPublicationFromString("[class,BROKER_INFO]," + "[brokerID,'" + getBrokerID()
-				+ "']");
+		
+		ConcurrentHashMap<String, Object> brokerInfo = getBrokerInfo();
+		String averageMatchTime = brokerInfo.get("Match Time").toString();
+		String averageQueueTime = brokerInfo.get(QUEUE_TIME_KEY).toString();
+		String incomingPubMsgRate = brokerInfo.get(
+				"Incoming Publication Message Rate").toString();
+		String incomingControlMsgRate = brokerInfo.get(
+				"Incoming Control Message Rate").toString();
+		String freeMemory = brokerInfo.get("Free Memory").toString();
+		int numberOfAdvs = 0;
+		int numberOfSubs = 0;
+		AdvSubInfoType advSubInfoType = brokerCore.getBrokerConfig().getAdvSubInfoType();
+		if (advSubInfoType == AdvSubInfoType.COUNT) {
+			numberOfAdvs = Integer.parseInt(brokerInfo.get("Advertisements").toString());
+			numberOfSubs = Integer.parseInt(brokerInfo.get("Subscriptions").toString());
+		} else {
+			numberOfAdvs = ((Set) brokerInfo.get("Advertisements")).size();
+			numberOfSubs = ((Set) brokerInfo.get("Subscriptions")).size();
+		}
+		int numberOfNeighbours = ((Set) brokerInfo.get(NEIGBOURS)).size();
+		int numberOfClients = ((Set) brokerInfo.get(CLIENTS)).size();
+		String status = "OK";	// For indicating broker's status for load balancing.. 
+		
+		String brokerInformation = "[class,BROKER_INFO]," + "[brokerID,'" + getBrokerID()
+				+ "']," + "[averageMatchTime,'"+averageMatchTime+"'],"+"[averageQueueTime,'"+averageQueueTime+"'],"+
+				"[incomingPubMsgRate,'"+incomingPubMsgRate+"'],"+"[incomingControlMsgRate,'"+incomingControlMsgRate+"'],"
+				+"[freeMemory,'"+freeMemory+"'],"+"[numberOfAdvs,'"+numberOfAdvs+"'],"+"[numberOfSubs,'"+numberOfSubs+"'],"
+				+"[numberOfNeighbours,'"+numberOfNeighbours+"'],"+"[numberOfClients,'"+numberOfClients+"'],"
+				+"[STATUS,'"+status+"']";
+		
+		//Publication pub = MessageFactory.createPublicationFromString("[class,BROKER_INFO]," + "[brokerID,'" + getBrokerID() + "']");
+		Publication pub = MessageFactory.createPublicationFromString(brokerInformation);
 		pub.setPayload(payload);
 
 		// Make the publication message
 		PublicationMessage pubmsg = new PublicationMessage(pub, brokerCore.getNewMessageID(),
 				brokerCore.getBrokerDestination());
-
+		System.out.println("SystemMonitor >> makeInfoPubMsg >> Publication Message going to be sent : " + pubmsg);
 		return pubmsg;
 	}
 
@@ -1169,6 +1209,7 @@ public class SystemMonitor extends Thread {
 
 		// Make the subscription message
 		Subscription sub = MessageFactory.createSubscriptionFromString(strSub);
+		System.out.println("..........................4.........................");
 		SubscriptionMessage subMsg = new SubscriptionMessage(sub, brokerCore.getNewMessageID(),
 				brokerCore.getBrokerDestination());
 

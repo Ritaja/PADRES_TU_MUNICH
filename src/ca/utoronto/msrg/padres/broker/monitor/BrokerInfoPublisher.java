@@ -62,22 +62,25 @@ public class BrokerInfoPublisher extends Thread {
 		publishingLock = new MasterSlaveLock();
 		publishBrokerInfo = broker.getBrokerConfig().isBrokerInfoOn();
 	}
-
+	
 	public void run() {
 		// ...and publish broker information
 		// We have the SystemMonitor doing this for us due to the adv problem
+		System.out.println("BrokerInfoPublisher >> run()");
 		sendAdvertisementMessage();
 
 		while (isRunning()) {
+			System.out.println("publishBrokerInfo : " + publishBrokerInfo);
 			if (!publishBrokerInfo)
+			{
 				stopPublishing();
-
+			}
 			// Stop when the brokercore is stopped
 			publishingLock.waitForLock();
-			
 			if(!isRunning())
+			{
 				break;
-
+			}
 			try {
 				Thread.sleep(getPublicationInterval());
 			} catch (Exception e) {
@@ -93,6 +96,7 @@ public class BrokerInfoPublisher extends Thread {
 	}
 
 	public void publishBrokerInfo() {
+		System.out.println("BrokerInfoPublisher >> publishBrokerInfo()");
 		try {
 			brokerCore.routeMessage(systemMonitor.getBrokerInfoInPublicationMessage(),
 					MessageDestination.INPUTQUEUE);
@@ -106,10 +110,19 @@ public class BrokerInfoPublisher extends Thread {
 	 * the future
 	 */
 	private void sendAdvertisementMessage() {
+		System.out.println("BrokerInfoPublisher >> sendAdvertisementMessage()");
 		Advertisement advertisement;
 		try {
-			advertisement = MessageFactory.createAdvertisementFromString("[class,eq,BROKER_INFO],[brokerID,eq,'"
-					+ brokerCore.getBrokerID() + "']");
+			
+			String advString  = "[class,eq,BROKER_INFO]," + "[brokerID,eq,'" + brokerCore.getBrokerID()
+					+ "']," + "[averageMatchTime,isPresent,'dummy'],"+"[averageQueueTime,isPresent,'dummy'],"+
+					"[incomingPubMsgRate,isPresent,'dummy'],"+"[incomingControlMsgRate,isPresent,'dummy'],"
+					+"[freeMemory,isPresent,'dummy'],"+"[numberOfAdvs,isPresent,'dummy'],"
+					+"[numberOfSubs,isPresent,'dummy'],"+"[numberOfNeighbours,isPresent,'dummy'],"
+					+"[numberOfClients,isPresent,'dummy'],"+"[STATUS,isPresent,'dummy']";
+			
+			advertisement = MessageFactory.createAdvertisementFromString(advString);
+			System.out.println("BrokerInfoPublisher >> sendAdvertisementMessage >> Advertisement sent : " + advertisement);
 		} catch (ParseException e) {
 			exceptionLogger.error(e.getMessage());
 			return;
