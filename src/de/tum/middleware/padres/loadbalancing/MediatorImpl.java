@@ -1,4 +1,4 @@
-package loadBalancing;
+package de.tum.middleware.padres.loadbalancing;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -15,7 +15,7 @@ import ca.utoronto.msrg.padres.common.util.CommandLine;
 
 public class MediatorImpl extends Client implements Runnable
 {
-	public HashMap<String, HashMap<String, String>> brokerMap = new HashMap<>();
+	public static HashMap<String, HashMap<String, String>> brokerMap = new HashMap<String, HashMap<String, String>>();
 	
 	protected static final String CONFIG_FILE_PATH = String.format(
 			"%s/etc/guiclient/client.properties", ClientConfig.PADRES_HOME);
@@ -33,7 +33,7 @@ public class MediatorImpl extends Client implements Runnable
 	@Override
 	public void processMessage(Message msg) {
 		// TODO Auto-generated method stub
-		HashMap<String, String> brokerData = new HashMap<>();
+		HashMap<String, String> brokerData = new HashMap<String, String>();
 		super.processMessage(msg);
 		System.out.println("Mediator >> processMessage >> Message Recevied : " + msg);
 		
@@ -57,15 +57,16 @@ public class MediatorImpl extends Client implements Runnable
 		if(brokerMap.containsKey(brokerID))
 			brokerMap.remove(brokerID);
 		brokerMap.put(brokerID, brokerData);
-		System.out.println("\nMediatorImpl >> brokerMap : " + brokerMap + "\n");
+		//System.out.println("\nMediatorImpl >> brokerMap : " + brokerMap + "\n");
 		
 		//Determine the overloaded broker
-		String overloadedBrokerID =  getOverloadedBroker(brokerMap);
-		System.out.println("Overloaded broker : " + overloadedBrokerID);
+		//String overloadedBrokerID =  getOverloadedBroker(brokerMap);
+		//System.out.println("Overloaded broker : " + overloadedBrokerID);
+		/*
 		if(overloadedBrokerID != null)
 		{
 			
-			/*
+	
 			BrokerCore brokerCore;
 			try {
 				brokerCore = new BrokerCore("-uri socket://localhost:1126/BrokerZ");
@@ -73,54 +74,94 @@ public class MediatorImpl extends Client implements Runnable
 			} catch (BrokerCoreException e) {
 				e.printStackTrace();
 			}
-			*/
+			
 		}
+		*/
 	}
 	
 	/**
 	 * This function analyzes the information sent by all brokers and returns the broker which is overloaded
 	 * @return
 	 */
-	public String getOverloadedBroker(HashMap<String, HashMap<String, String>> brokerMap) {
+	public static String getOverloadedBroker(HashMap<String, HashMap<String, String>> brokerMap) {
 		/* check performance metrics and STATUS of every broker.
 		Change STATUS to "NA" if broker id overloaded. 
 		Broker will only be considered overloaded if STATUS is "NA".
 		*/
-		Iterator<Map.Entry<String, HashMap<String, String>>> iterator = brokerMap.entrySet().iterator();
-		while(iterator.hasNext())
-		{
-			Map.Entry<String, HashMap<String, String>> entry = iterator.next();
-			calculatePerformance(entry);
-		}
-		Iterator<Map.Entry<String, HashMap<String, String>>> it = brokerMap.entrySet().iterator();
-		while(it.hasNext())
-		{
-			Map.Entry<String, HashMap<String, String>> entry = it.next();
-			if(brokerMap.get(entry.getKey()).get("STATUS").contains("NA"))
+		String overloadedBroker = "";
+		try {
+			Iterator<Map.Entry<String, HashMap<String, String>>> iterator = brokerMap.entrySet().iterator();
+			float maxIR = 0f;
+			while(iterator.hasNext())
 			{
-				return entry.getKey();
+				Map.Entry<String, HashMap<String, String>> entry = iterator.next();			
+				float currIR = calculateIRPerformance(entry);
+				System.out.println(" decision ="+(maxIR <= currIR));
+				if (maxIR <= currIR)
+				{
+					maxIR = currIR;
+					System.out.println("Broker ID ="+entry.getKey());
+					System.out.println("Value of Ir ="+maxIR);
+					overloadedBroker = entry.getKey();
+				}				
 			}
+			HashMap <String, String> temp = brokerMap.get(overloadedBroker);
+			System.out.println("temp ="+temp);
+			if (temp!=null && temp.containsKey("STATUS"))
+				temp.remove("STATUS");
+			temp.put("STATUS", "NA");
+			/*Iterator<Map.Entry<String, HashMap<String, String>>> it = brokerMap.entrySet().iterator();
+			while(it.hasNext())
+			{
+				Map.Entry<String, HashMap<String, String>> entry = it.next();
+				if(brokerMap.get(entry.getValue()).get("STATUS").contains("NA"))
+				{
+					return entry.getKey();
+				}		
+			}*/
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		return null;
+		return overloadedBroker;
 	}
 	
 	/**
 	 * This function calculates performance metrics of each broker in brokerMap 
-	 * and sets the STATUS of overloaded broker
+	 * and returns the IR for the broker
 	 * @param entry
 	 */
-	public void calculatePerformance(Map.Entry<String, HashMap<String, String>> entry) {
-		System.out.println("Calculating Performance Mentrics of broker : " + entry.getKey());
-		HashMap<String, String> brokerDataMap = brokerMap.get(entry.getKey());
-		String numberOfNeighbours = brokerDataMap.get("numberOfNeighbours");
-		numberOfNeighbours = numberOfNeighbours.replaceAll("[^0-9]", "");
+	public static float calculateIRPerformance(Map.Entry<String, HashMap<String, String>> entry) {
+		float ir = 0f;
+		try {
+			System.out.println("Calculating IR Performance Metrics of broker : " + entry.getKey());
+			HashMap<String, String> brokerDataMap = brokerMap.get(entry.getKey());
+			/*String numberOfNeighbours = brokerDataMap.get("numberOfNeighbours");
+			numberOfNeighbours = numberOfNeighbours.replaceAll("[^0-9]", "");
+			
+			if(Integer.parseInt(numberOfNeighbours) > 1)
+			{
+				System.out.println("Number of neighbours : " + numberOfNeighbours);
+				System.out.println("OVERLOADED....!!!!");
+				brokerDataMap.put("STATUS", "NA");
+			}*/
+			
+			float incomingPubMsgRate = Float.parseFloat(brokerDataMap.get("incomingPubMsgRate")
+					.substring(1, brokerDataMap.get("incomingPubMsgRate").length()-1));
+			float averageMatchTime = Float.parseFloat(brokerDataMap.get("averageMatchTime").
+					substring(1,brokerDataMap.get("averageMatchTime").length()-1));
+			if (averageMatchTime == 0)
+				ir = 0;
+			else			
+				ir = incomingPubMsgRate / averageMatchTime;
+			
+			System.out.println("Value for IR in the calculation is "+incomingPubMsgRate +"    "+averageMatchTime);
+		} catch (NumberFormatException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}	
+		return ir;
 		
-		if(Integer.parseInt(numberOfNeighbours) > 1)
-		{
-			System.out.println("Number of neighbours : " + numberOfNeighbours);
-			System.out.println("OVERLOADED....!!!!");
-			brokerDataMap.put("STATUS", "NA");
-		}
 	}
 	
 	@Override
@@ -144,6 +185,12 @@ public class MediatorImpl extends Client implements Runnable
 			MediatorImpl mediator = new MediatorImpl(userConfig);
 			System.out.println("Mediator created : " + mediator.clientID);
 			mediator.subscribe(MessageFactory.createSubscriptionFromString("[class,eq,BROKER_INFO]"));
+			while (true) {
+				Thread.sleep(30000);
+				String overloadedBrokerID = getOverloadedBroker(brokerMap);
+				System.out.println("the overloaded broker = "
+						+ overloadedBrokerID);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
