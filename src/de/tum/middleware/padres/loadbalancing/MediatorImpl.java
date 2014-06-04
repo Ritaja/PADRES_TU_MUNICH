@@ -153,7 +153,7 @@ public class MediatorImpl extends Client implements Runnable
 			if (averageMatchTime == 0)
 				ir = 0;
 			else			
-				ir = incomingPubMsgRate / averageMatchTime;
+				ir = incomingPubMsgRate * averageMatchTime;
 			
 			System.out.println("Value for IR in the calculation is "+incomingPubMsgRate +"    "+averageMatchTime);
 		} catch (NumberFormatException e) {
