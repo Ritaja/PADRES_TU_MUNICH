@@ -20,12 +20,15 @@ package ca.utoronto.msrg.padres.broker.monitor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.swing.Timer;
@@ -94,6 +97,8 @@ public class SystemMonitor extends Thread {
 	protected static final String QUEUE_TIME_KEY = "Queue Time";
 
 	public static final String TRACEROUTE_MESSAGE_KEY = "TRACEROUTE_MESSAGE";
+	
+	public static final String CSS_TO_BE_MIGRATED = "CSS_TO_BE_MIGRATED";
 
 	// private static final String TRACEROUTE_PREV_BROKER_KEY =
 	// "TRACEROUTE_PREV_BROKER";
@@ -179,6 +184,8 @@ public class SystemMonitor extends Thread {
 	public static final int TYPE_ADV = 0;
 
 	public static final int TYPE_SUB = 1;
+	
+	public static String CONTROL_SUBS = "BROKER_INFO,GLOBAL_FD,NETWORK_DISCOVERY,BROKER_MONITOR,HEARTBEAT_MANAGER,BROKER_CONTROL";
 
 	// command line argument and properties related
 
@@ -192,7 +199,7 @@ public class SystemMonitor extends Thread {
 	private PublicationMessage currentPubMsg = null;
 
 	// add for logging. Log performance information with a log_interval
-	private int log_interval = 20000; // the log_interval can also be defined
+	private int log_interval = 15000; // the log_interval can also be defined
 
 	// in the broker property file
 
@@ -252,6 +259,8 @@ public class SystemMonitor extends Thread {
 			sendSubscriptionForGlobalFD();
 
 			advertiseTraceroute();
+			
+			advertiseCSSToBeMigrated();
 
 			systemMonitorLogger.debug("Starting BrokerInfoPublisher.");
 			System.out.println("SystemMonitor >> run >> Starting BrokerInfoPublisher.");
@@ -259,7 +268,7 @@ public class SystemMonitor extends Thread {
 			brokerInfoPublisher = new BrokerInfoPublisher(brokerCore);
 			brokerInfoPublisher.start();
 
-			systemMonitorLogger.info("SystemMonitor is fully started.");
+			systemMonitorLogger.info("SystemMonitor is fully started.");			
 			// wake up threads waiting for SystemMonitor to start
 			started = true;
 			started_lock.notifyAll();
@@ -268,7 +277,7 @@ public class SystemMonitor extends Thread {
 
 				public void actionPerformed(ActionEvent evt) {
 					// do logging
-					if (performanceLogger.isDebugEnabled()) {
+					if (performanceLogger.isDebugEnabled()) {						
 						ConcurrentHashMap<String, Object> brokerInfo = getBrokerInfo();
 						String averageMatchTime = brokerInfo.get("Match Time").toString();
 						String averageQueueTime = brokerInfo.get(QUEUE_TIME_KEY).toString();
@@ -289,22 +298,57 @@ public class SystemMonitor extends Thread {
 						}
 						int numberOfNeighbours = ((Set) brokerInfo.get(NEIGBOURS)).size();
 						int numberOfClients = ((Set) brokerInfo.get(CLIENTS)).size();
+						Map <String, SubscriptionMessage> cSS_Subscribed = brokerCore.getSubscriptions();
+						String neighborsUriArr []= brokerCore.getBrokerConfig().getNeighborURIs();
 						
+						//Map <String, SubscriptionMessage> cSS_Subscribed = brokerCore.getSubscriptions();
 						performanceLogger.debug(averageMatchTime + "      " + averageQueueTime
 								+ "      " + incomingPubMsgRate + "      " + incomingControlMsgRate
 								+ "      " + freeMemory + "      " + numberOfAdvs + "      "
 								+ numberOfSubs + "      " + numberOfNeighbours + "      "
 								+ numberOfClients);
-						System.out.println(averageMatchTime + "      " + averageQueueTime
-								+ "      " + incomingPubMsgRate + "      " + incomingControlMsgRate
-								+ "      " + freeMemory + "      " + numberOfAdvs + "      "
-								+ numberOfSubs + "      " + numberOfNeighbours + "      "
-								+ numberOfClients);
+						performanceLogger.debug("####### The neighbors are as follows");
+						String neighborsStr = "";
+						for (int i=0; i<neighborsUriArr.length; i++)
+						{
+							performanceLogger.debug(neighborsUriArr[i]);
+							neighborsStr = neighborsStr + neighborsUriArr[i] + ":";
+						}
+						// Run a loop to extract all the subscriptions of the broker
+						
+						String externalSubsMsgs = "";
+						boolean isAControlElem = true;
+						for (Map.Entry<String, SubscriptionMessage> entry : cSS_Subscribed.entrySet()) 
+						{							
+							performanceLogger.debug("Key = " + entry.getKey() + ", Value = " + entry.getValue());
+							StringTokenizer st = new StringTokenizer(CONTROL_SUBS,",");
+							while (st.hasMoreElements())
+							{
+								String strToSearch = (String)st.nextElement();
+								System.out.println("wthat a....."+strToSearch);
+								String subVal = entry.getValue().getSubscription().toString();
+								System.out.println("subscription value....."+subVal);
+								if(subVal.contains(strToSearch))
+								{
+									isAControlElem = true;
+									break;
+								}
+								else
+								{
+									isAControlElem = false;
+								}
+							}
+							if (!isAControlElem)
+							{
+								externalSubsMsgs = externalSubsMsgs+"Key="+entry.getKey() +", Value = " + entry.getValue().getSubscription().toString()+":";
+							}
+						}
+						System.out.println("Subscription messages in the brokercore ####"+externalSubsMsgs);						
 					}
 				}
 			};
 			Timer performanceLogtimer = new Timer(log_interval, logPerformanceTaskPerformer);
-			//performanceLogtimer.start();
+			performanceLogtimer.start();
 		}
 
 		// we have to wait sometime for the timer thread is fully started. If
@@ -1323,6 +1367,28 @@ public class SystemMonitor extends Thread {
 					// broker(client) to client(broker).
 					// "[brokerID,eq,'" + getBrokerID() + "']," +
 					"[TRACEROUTE_ID,isPresent,'12345']");
+		} catch (ParseException e) {
+			exceptionLogger.error(e.getMessage());
+			return;
+		}
+		AdvertisementMessage advMsg = new AdvertisementMessage(adv, brokerCore.getNewMessageID(),
+				brokerCore.getBrokerDestination());
+
+		brokerCore.routeMessage(advMsg, MessageDestination.INPUTQUEUE);
+
+		// mySleep(SLEEP_AFTER_ADV_TRACEROUTE);
+	}
+	
+	/* Sayan load balancing changes */
+	// Send out an advertisement for CSS to be migrated - currently sending all the CSSs present.
+	private void advertiseCSSToBeMigrated() {
+		// advertisedTraceroute = true;
+
+		Advertisement adv;
+		try {
+			adv = MessageFactory.createAdvertisementFromString("[class,eq," + CSS_TO_BE_MIGRATED + "],"
+					+ "[CSSList,isPresent,'Dummy']," + "[from,isPresent,'" + getBrokerID() + "'],");
+			
 		} catch (ParseException e) {
 			exceptionLogger.error(e.getMessage());
 			return;

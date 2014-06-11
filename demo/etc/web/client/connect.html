@@ -23,33 +23,36 @@ function _setDefaultBroker() {
 </script>
 
 <div id="connect_panel_closed" class="panel" style="display: none;">
-	<a href="#" class="hide" onclick="togglePanels(document.getElementById('connect_panel_closed'), document.getElementById('connect_panel_open'));"><img src="images/expand.png"></a>
+	<a href="#" class="hide"
+		onclick="togglePanels(document.getElementById('connect_panel_closed'), document.getElementById('connect_panel_open'));"><img
+		src="images/expand.png"></a>
 </div>
 <div id="connect_panel_open" class="panel">
-	<a href="#" class="hide" onclick="togglePanels(document.getElementById('connect_panel_closed'), document.getElementById('connect_panel_open'));"><img src="images/collapse.png"></a>
-	<div id="connect_content" class="content" onmousedown="startResize(document.getElementById('connect_form'), document.getElementById('connect_panel_open'), 46);">
-		
+	<a href="#" class="hide"
+		onclick="togglePanels(document.getElementById('connect_panel_closed'), document.getElementById('connect_panel_open'));"><img
+		src="images/collapse.png"></a>
+	<div id="connect_content" class="content"
+		onmousedown="startResize(document.getElementById('connect_form'), document.getElementById('connect_panel_open'), 46);">
+
 		<h3>
-			<img src="images/connect.png" />
-			Connect to Broker
+			<img src="images/connect.png" /> Connect to Broker
 		</h3>
-		
+
 		<form id="connect_form">
 			<div class="labels">
 				<input type="label" readonly="true" value="Host:" />
 			</div>
 			<div class="inputs">
-				<input type="text" id="address_text" value="rmi://localhost:1099/Broker1" />
+				<input type="text" id="address_text"
+					value="rmi://localhost:1099/Broker1" />
 			</div>
 			<div class="right_align">
 				<input type="button" value="Connect" onclick="_connect()" />
-				</div>
-			</form>
-			
-			<h3>
-				Connected Brokers
-		</h3>
-		
+			</div>
+		</form>
+
+		<h3>Connected Brokers</h3>
+
 		<form id="broker_form">
 			<div class="labels">
 				<input type="label" readonly="true" value="Brokers:" />
@@ -58,14 +61,14 @@ function _setDefaultBroker() {
 				<select id="broker_option"></select>
 			</div>
 			<div class="right_align">
-				<input type="button" value="Refresh" onclick="loadBrokers()" />
-				<input type="button" value="Set Default" onclick="_setDefaultBroker()" />
+				<input type="button" value="Refresh" onclick="loadBrokers()" /> <input
+					type="button" value="Set Default" onclick="_setDefaultBroker()" />
 				<input type="button" value="Disconnect" onclick="_disconnect()" />
 			</div>
 		</form>
 	</div>
 </div>
-	
+
 <script type="text/javascript">
 	// initialize
 	setBrokerOptionElem(document.getElementById("broker_option"));

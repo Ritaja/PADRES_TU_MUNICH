@@ -41,76 +41,83 @@ function _loadFile() {
 </script>
 
 <div id="publication_panel_closed" class="panel" style="display: none;">
-<a href="#" class="hide" onclick="togglePanels(document.getElementById('publication_panel_closed'), document.getElementById('publication_panel_open'));"><img src="images/expand.png"></a>
+	<a href="#" class="hide"
+		onclick="togglePanels(document.getElementById('publication_panel_closed'), document.getElementById('publication_panel_open'));"><img
+		src="images/expand.png"></a>
 </div>
 <div id="publication_panel_open" class="panel">
-<a href="#" class="hide" onclick="togglePanels(document.getElementById('publication_panel_closed'), document.getElementById('publication_panel_open'));"><img src="images/collapse.png"></a>
+	<a href="#" class="hide"
+		onclick="togglePanels(document.getElementById('publication_panel_closed'), document.getElementById('publication_panel_open'));"><img
+		src="images/collapse.png"></a>
 	<div id="publication_content" class="content">
-		
+
 		<h3>
-			<img src="images/publish.png" />
-			Issue Publication
+			<img src="images/publish.png" /> Issue Publication
 		</h3>
-		
-		<form id="predicate_form" onmousedown="startResize(document.getElementById('predicate_form'), document.getElementById('publication_panel_open'), 46);"
-			onmouseover="highlight(this);"
-			onmouseout="unhighlight(this);"
-		>
+
+		<form id="predicate_form"
+			onmousedown="startResize(document.getElementById('predicate_form'), document.getElementById('publication_panel_open'), 46);"
+			onmouseover="highlight(this);" onmouseout="unhighlight(this);">
 			<div class="labels">
-				<input type="label" readonly="true" value="Attr:"/> <br />
-				<input type="label" readonly="true" value="Val:" />
+				<input type="label" readonly="true" value="Attr:" /> <br /> <input
+					type="label" readonly="true" value="Val:" />
 			</div>
 			<div class="inputs">
-				<input type="text" id="attribute_text"/> <br />
-				<input type="text" id="value_text"/>
+				<input type="text" id="attribute_text" /> <br /> <input type="text"
+					id="value_text" />
 			</div>
 			<div class="right_align">
-			<input type="button" value="Add Tuple" onclick="_addPredicate()" />
+				<input type="button" value="Add Tuple" onclick="_addPredicate()" />
 			</div>
 		</form>
-		
-		<form id="publication_form" onmousedown="startResize(document.getElementById('publication_text'), document.getElementById('publication_panel_open'), 46);"
-			onmouseover="highlight(this);"
-			onmouseout="unhighlight(this);"
-		>
-		<textarea id="publication_text"></textarea>
-		<div class="right_align">
-		<input type="button" value="Clear" onclick="clearText(document.getElementById('publication_text'))" />
-			<input type="button" value="Publish" onclick="_publish()" />
-		</div>
+
+		<form id="publication_form"
+			onmousedown="startResize(document.getElementById('publication_text'), document.getElementById('publication_panel_open'), 46);"
+			onmouseover="highlight(this);" onmouseout="unhighlight(this);">
+			<textarea id="publication_text"></textarea>
+			<div class="right_align">
+				<input type="button" value="Clear"
+					onclick="clearText(document.getElementById('publication_text'))" />
+				<input type="button" value="Publish" onclick="_publish()" />
+			</div>
 		</form>
 	</div>
 </div>
-		
+
 <div id="pub_advanced_panel_closed" class="panel" style="display: none;">
-	<a href="#" class="hide" onclick="togglePanels(document.getElementById('pub_advanced_panel_closed'), document.getElementById('pub_advanced_panel_open'));"><img src="images/expand.png"></a>
+	<a href="#" class="hide"
+		onclick="togglePanels(document.getElementById('pub_advanced_panel_closed'), document.getElementById('pub_advanced_panel_open'));"><img
+		src="images/expand.png"></a>
 </div>
 <div id="pub_advanced_panel_open" class="panel">
-	<a href="#" class="hide" onclick="togglePanels(document.getElementById('pub_advanced_panel_closed'), document.getElementById('pub_advanced_panel_open'));"><img src="images/collapse.png"></a>
+	<a href="#" class="hide"
+		onclick="togglePanels(document.getElementById('pub_advanced_panel_closed'), document.getElementById('pub_advanced_panel_open'));"><img
+		src="images/collapse.png"></a>
 	<div id="pub_advanced_content" class="content">
 		<h3>
-			<img src="images/advanced.png" />
-			Advanced
+			<img src="images/advanced.png" /> Advanced
 		</h3>
-		
-		<form id="pub_preds_form" onmousedown="startResize(document.getElementById('pub_preds_form'), document.getElementById('pub_advanced_panel_open'), 46);">
+
+		<form id="pub_preds_form"
+			onmousedown="startResize(document.getElementById('pub_preds_form'), document.getElementById('pub_advanced_panel_open'), 46);">
 			<div class="labels">
-				<input type="label" readonly="true" value="File:" /> <br />
-				<input type="label" readonly="true" value=""/> <br />
-				<input type="label" readonly="true" value="Tuples:"/>
+				<input type="label" readonly="true" value="File:" /> <br /> <input
+					type="label" readonly="true" value="" /> <br /> <input
+					type="label" readonly="true" value="Tuples:" />
 			</div>
 			<div class="inputs">
-				<input type="file" id="filename_text" /> <br />
-				<input type="label" readonly="true" value=""/> <br />
-				<select id="pub_preds_option"></select> <br />
+				<input type="file" id="filename_text" /> <br /> <input
+					type="label" readonly="true" value="" /> <br /> <select
+					id="pub_preds_option"></select> <br />
 				<div class="right_align">
-				<input type="button" value="Load File" onclick="_loadFile()" />
-				<input type="button" value="Add Tuples(s)" onclick="_addPredicates()" />
+					<input type="button" value="Load File" onclick="_loadFile()" /> <input
+						type="button" value="Add Tuples(s)" onclick="_addPredicates()" />
 				</div>
 			</div>
-		</form> 
-		
-		<form id="broker_form" onmousedown="startResize(document.getElementById('broker_form'), document.getElementById('pub_advanced_panel_open'), 46);">
+		</form>
+
+		<form id="broker_form"
+			onmousedown="startResize(document.getElementById('broker_form'), document.getElementById('pub_advanced_panel_open'), 46);">
 			<div class="labels">
 				<input type="label" readonly="true" value="Brokers:" />
 			</div>
@@ -122,38 +129,43 @@ function _loadFile() {
 			</div>
 		</form>
 
-		<form id="pub_options_form" onmousedown="startResize(document.getElementById('pub_options_form'), document.getElementById('pub_advanced_panel_open'), 46);">
-			<input type="checkbox" id="auto_advertise_check" value="Auto-Advertise" checked="true" /> Auto-Advertise
+		<form id="pub_options_form"
+			onmousedown="startResize(document.getElementById('pub_options_form'), document.getElementById('pub_advanced_panel_open'), 46);">
+			<input type="checkbox" id="auto_advertise_check"
+				value="Auto-Advertise" checked="true" /> Auto-Advertise
 		</form>
 	</div>
 
 </div>
 
 <div id="messages_panel_closed" class="panel" style="display: none;">
-	<a href="#" class="hide" onclick="togglePanels(document.getElementById('messages_panel_closed'), document.getElementById('messages_panel_open'));"><img src="images/expand.png"></a>
+	<a href="#" class="hide"
+		onclick="togglePanels(document.getElementById('messages_panel_closed'), document.getElementById('messages_panel_open'));"><img
+		src="images/expand.png"></a>
 </div>
 <div id="messages_panel_open" class="panel">
-	<a href="#" class="hide" onclick="togglePanels(document.getElementById('messages_panel_closed'), document.getElementById('messages_panel_open'));"><img src="images/collapse.png"></a>
-	<div id="messages_content" class="content" onmousedown="startResize(document.getElementById('advertisement_list_form'), document.getElementById('messages_panel_open'), 46);">
-		
+	<a href="#" class="hide"
+		onclick="togglePanels(document.getElementById('messages_panel_closed'), document.getElementById('messages_panel_open'));"><img
+		src="images/collapse.png"></a>
+	<div id="messages_content" class="content"
+		onmousedown="startResize(document.getElementById('advertisement_list_form'), document.getElementById('messages_panel_open'), 46);">
+
 		<h3>
-			<img src="images/advertisements.png" />
-		Active Advertisements
+			<img src="images/advertisements.png" /> Active Advertisements
 		</h3>
-		
-		<form id="advertisement_list_form" onmousedown="startResize(this, document.getElementById('messages_panel_open'), 46)"
-			onmouseover="highlight(this);"
-			onmouseout="unhighlight(this);"
-		>
-			<input type="button" value="Refresh" onclick="refreshActiveAdvertisements()" />
-			<div id="advertisement_list" class="message_list">
-			</div>
-		</form>	
+
+		<form id="advertisement_list_form"
+			onmousedown="startResize(this, document.getElementById('messages_panel_open'), 46)"
+			onmouseover="highlight(this);" onmouseout="unhighlight(this);">
+			<input type="button" value="Refresh"
+				onclick="refreshActiveAdvertisements()" />
+			<div id="advertisement_list" class="message_list"></div>
+		</form>
 	</div>
 	</script>
 </div>
 
-		
+
 <script type="text/javascript">
 	// initializations once divs are loaded
 	setAdvListElem(document.getElementById("advertisement_list"));

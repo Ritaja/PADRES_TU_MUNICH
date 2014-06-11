@@ -150,7 +150,7 @@ TokenReturner a;
     case SUB_PARSER:
     {
       obj = new Subscription();
-      if (a.val.image.charAt(0) == '\u005c'' || a.val.image.charAt(0) == '\u005c"')
+      if (a.val.image.charAt(0) == '\'' || a.val.image.charAt(0) == '\"')
       {
         String op = a.op.image;
         String value = a.val.image;
@@ -168,7 +168,7 @@ TokenReturner a;
     case ADV_PARSER:
     {
       obj = new Advertisement();
-      if (a.val.image.charAt(0) == '\u005c'' || a.val.image.charAt(0) == '\u005c"')
+      if (a.val.image.charAt(0) == '\'' || a.val.image.charAt(0) == '\"')
       {
         String op = a.op.image;
         String value = a.val.image;
@@ -208,7 +208,7 @@ TokenReturner a;
         {
           case STRING:
             {
-              if (a.val.image.charAt(0) == '\u005c'' || a.val.image.charAt(0) == '\u005c"')
+              if (a.val.image.charAt(0) == '\'' || a.val.image.charAt(0) == '\"')
                     ((Subscription)obj).addPredicate(a.attr.image, new Predicate(a.op.image, a.val.image.substring(1,a.val.image.length()-1)));
               else
                     ((Subscription)obj).addPredicate(a.attr.image, new Predicate(a.op.image, a.val.image));
@@ -240,7 +240,7 @@ TokenReturner a;
         {
           case STRING:
             {
-              if (a.val.image.charAt(0) == '\u005c'' || a.val.image.charAt(0) == '\u005c"')
+              if (a.val.image.charAt(0) == '\'' || a.val.image.charAt(0) == '\"')
               ((Advertisement)obj).addPredicate(a.attr.image, new Predicate(a.op.image, a.val.image.substring(1,a.val.image.length()-1)));
               else
               ((Advertisement)obj).addPredicate(a.attr.image, new Predicate(a.op.image, a.val.image));
@@ -275,7 +275,7 @@ TokenReturner a;
   TokenReturner a;
     a = ClassAttributeOperatorValueTriple();
     Subscription sub = new Subscription();
-    if (a.val.image.charAt(0) == '\u005c'' || a.val.image.charAt(0) == '\u005c"')
+    if (a.val.image.charAt(0) == '\'' || a.val.image.charAt(0) == '\"')
       sub.addPredicate("class", new Predicate(a.op.image, a.val.image.substring(1,a.val.image.length()-1)));
     else
       sub.addPredicate("class", new Predicate(a.op.image, a.val.image));
@@ -300,7 +300,7 @@ TokenReturner a;
         {
           case STRING:
           {
-            if (a.val.image.charAt(0) == '\u005c'' || a.val.image.charAt(0) == '\u005c"')
+            if (a.val.image.charAt(0) == '\'' || a.val.image.charAt(0) == '\"')
                   sub.addPredicate(a.attr.image,
                                                            new Predicate(a.op.image,
                                                                                          a.val.image.substring(1,a.val.image.length()-1)));
@@ -589,7 +589,7 @@ TokenReturner a;
   Token val;
     val = ClassAttributeValuePair();
      Publication pub = new Publication();
-     if (val.image.charAt(0) == '\u005c'' || val.image.charAt(0) == '\u005c"')
+     if (val.image.charAt(0) == '\'' || val.image.charAt(0) == '\"')
        pub.addPair("class", val.image.substring(1,val.image.length()-1));
      else
        pub.addPair("class", val.image);
@@ -605,7 +605,7 @@ TokenReturner a;
       }
       jj_consume_token(COMMA);
       a = AttributeValuePair();
-       if (a.val.image.charAt(0) == '\u005c'' || a.val.image.charAt(0) == '\u005c"')
+       if (a.val.image.charAt(0) == '\'' || a.val.image.charAt(0) == '\"')
        {
          pub.addPair(a.attr.image, a.val.image.substring(1,a.val.image.length()-1));
        }
@@ -774,26 +774,26 @@ TokenReturner a;
     throw new Error("Missing return statement in function");
   }
 
-  private boolean jj_2_1(int xla) {
+  final private boolean jj_2_1(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_1(); }
     catch(LookaheadSuccess ls) { return true; }
     finally { jj_save(0, xla); }
   }
 
-  private boolean jj_2_2(int xla) {
+  final private boolean jj_2_2(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_2(); }
     catch(LookaheadSuccess ls) { return true; }
     finally { jj_save(1, xla); }
   }
 
-  private boolean jj_3_1() {
+  final private boolean jj_3_1() {
     if (jj_3R_5()) return true;
     return false;
   }
 
-  private boolean jj_3R_7() {
+  final private boolean jj_3R_7() {
     if (jj_scan_token(27)) return true;
     if (jj_scan_token(CLASS)) return true;
     if (jj_scan_token(COMMA)) return true;
@@ -801,50 +801,46 @@ TokenReturner a;
     return false;
   }
 
-  private boolean jj_3R_5() {
+  final private boolean jj_3R_5() {
     if (jj_3R_7()) return true;
     return false;
   }
 
-  private boolean jj_3_2() {
+  final private boolean jj_3_2() {
     if (jj_scan_token(25)) return true;
     if (jj_3R_6()) return true;
     return false;
   }
 
-  private boolean jj_3R_6() {
+  final private boolean jj_3R_6() {
     if (jj_3R_7()) return true;
     return false;
   }
 
-  /** Generated Token Manager. */
   public MessageParserTokenManager token_source;
   SimpleCharStream jj_input_stream;
-  /** Current token. */
-  public Token token;
-  /** Next token. */
-  public Token jj_nt;
+  public Token token, jj_nt;
   private int jj_ntk;
   private Token jj_scanpos, jj_lastpos;
   private int jj_la;
+  public boolean lookingAhead = false;
+  private boolean jj_semLA;
   private int jj_gen;
   final private int[] jj_la1 = new int[25];
   static private int[] jj_la1_0;
   static {
-      jj_la1_init_0();
+      jj_la1_0();
    }
-   private static void jj_la1_init_0() {
+   private static void jj_la1_0() {
       jj_la1_0 = new int[] {0x2000000,0x8000000,0x2000,0x2000000,0x40,0x40,0x24000,0x24000,0x880,0x124000,0x3e4000,0x1c80,0x880,0x124000,0x2c0000,0x3e4000,0x1400,0x1c80,0x40,0x8000,0x124000,0x3e4000,0x3e4000,0x120000,0x2c0000,};
    }
   final private JJCalls[] jj_2_rtns = new JJCalls[2];
   private boolean jj_rescan = false;
   private int jj_gc = 0;
 
-  /** Constructor with InputStream. */
   public MessageParser(java.io.InputStream stream) {
      this(stream, null);
   }
-  /** Constructor with InputStream and supplied encoding */
   public MessageParser(java.io.InputStream stream, String encoding) {
     try { jj_input_stream = new SimpleCharStream(stream, encoding, 1, 1); } catch(java.io.UnsupportedEncodingException e) { throw new RuntimeException(e); }
     token_source = new MessageParserTokenManager(jj_input_stream);
@@ -855,11 +851,9 @@ TokenReturner a;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
-  /** Reinitialise. */
   public void ReInit(java.io.InputStream stream) {
      ReInit(stream, null);
   }
-  /** Reinitialise. */
   public void ReInit(java.io.InputStream stream, String encoding) {
     try { jj_input_stream.ReInit(stream, encoding, 1, 1); } catch(java.io.UnsupportedEncodingException e) { throw new RuntimeException(e); }
     token_source.ReInit(jj_input_stream);
@@ -870,7 +864,6 @@ TokenReturner a;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
-  /** Constructor. */
   public MessageParser(java.io.Reader stream) {
     jj_input_stream = new SimpleCharStream(stream, 1, 1);
     token_source = new MessageParserTokenManager(jj_input_stream);
@@ -881,7 +874,6 @@ TokenReturner a;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
-  /** Reinitialise. */
   public void ReInit(java.io.Reader stream) {
     jj_input_stream.ReInit(stream, 1, 1);
     token_source.ReInit(jj_input_stream);
@@ -892,7 +884,6 @@ TokenReturner a;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
-  /** Constructor with generated Token Manager. */
   public MessageParser(MessageParserTokenManager tm) {
     token_source = tm;
     token = new Token();
@@ -902,7 +893,6 @@ TokenReturner a;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
-  /** Reinitialise. */
   public void ReInit(MessageParserTokenManager tm) {
     token_source = tm;
     token = new Token();
@@ -912,7 +902,7 @@ TokenReturner a;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
-  private Token jj_consume_token(int kind) throws ParseException {
+  final private Token jj_consume_token(int kind) throws ParseException {
     Token oldToken;
     if ((oldToken = token).next != null) token = token.next;
     else token = token.next = token_source.getNextToken();
@@ -938,7 +928,7 @@ TokenReturner a;
 
   static private final class LookaheadSuccess extends java.lang.Error { }
   final private LookaheadSuccess jj_ls = new LookaheadSuccess();
-  private boolean jj_scan_token(int kind) {
+  final private boolean jj_scan_token(int kind) {
     if (jj_scanpos == jj_lastpos) {
       jj_la--;
       if (jj_scanpos.next == null) {
@@ -959,8 +949,6 @@ TokenReturner a;
     return false;
   }
 
-
-/** Get the next Token. */
   final public Token getNextToken() {
     if (token.next != null) token = token.next;
     else token = token.next = token_source.getNextToken();
@@ -969,9 +957,8 @@ TokenReturner a;
     return token;
   }
 
-/** Get the specific Token. */
   final public Token getToken(int index) {
-    Token t = token;
+    Token t = lookingAhead ? jj_scanpos : token;
     for (int i = 0; i < index; i++) {
       if (t.next != null) t = t.next;
       else t = t.next = token_source.getNextToken();
@@ -979,14 +966,14 @@ TokenReturner a;
     return t;
   }
 
-  private int jj_ntk() {
+  final private int jj_ntk() {
     if ((jj_nt=token.next) == null)
       return (jj_ntk = (token.next=token_source.getNextToken()).kind);
     else
       return (jj_ntk = jj_nt.kind);
   }
 
-  private java.util.List jj_expentries = new java.util.ArrayList();
+  private java.util.Vector jj_expentries = new java.util.Vector();
   private int[] jj_expentry;
   private int jj_kind = -1;
   private int[] jj_lasttokens = new int[100];
@@ -1001,26 +988,31 @@ TokenReturner a;
       for (int i = 0; i < jj_endpos; i++) {
         jj_expentry[i] = jj_lasttokens[i];
       }
-      jj_entries_loop: for (java.util.Iterator it = jj_expentries.iterator(); it.hasNext();) {
-        int[] oldentry = (int[])(it.next());
+      boolean exists = false;
+      for (java.util.Enumeration e = jj_expentries.elements(); e.hasMoreElements();) {
+        int[] oldentry = (int[])(e.nextElement());
         if (oldentry.length == jj_expentry.length) {
+          exists = true;
           for (int i = 0; i < jj_expentry.length; i++) {
             if (oldentry[i] != jj_expentry[i]) {
-              continue jj_entries_loop;
+              exists = false;
+              break;
             }
           }
-          jj_expentries.add(jj_expentry);
-          break jj_entries_loop;
+          if (exists) break;
         }
       }
+      if (!exists) jj_expentries.addElement(jj_expentry);
       if (pos != 0) jj_lasttokens[(jj_endpos = pos) - 1] = kind;
     }
   }
 
-  /** Generate ParseException. */
   public ParseException generateParseException() {
-    jj_expentries.clear();
+    jj_expentries.removeAllElements();
     boolean[] la1tokens = new boolean[29];
+    for (int i = 0; i < 29; i++) {
+      la1tokens[i] = false;
+    }
     if (jj_kind >= 0) {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
@@ -1038,7 +1030,7 @@ TokenReturner a;
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;
-        jj_expentries.add(jj_expentry);
+        jj_expentries.addElement(jj_expentry);
       }
     }
     jj_endpos = 0;
@@ -1046,20 +1038,18 @@ TokenReturner a;
     jj_add_error_token(0, 0);
     int[][] exptokseq = new int[jj_expentries.size()][];
     for (int i = 0; i < jj_expentries.size(); i++) {
-      exptokseq[i] = (int[])jj_expentries.get(i);
+      exptokseq[i] = (int[])jj_expentries.elementAt(i);
     }
     return new ParseException(token, exptokseq, tokenImage);
   }
 
-  /** Enable tracing. */
   final public void enable_tracing() {
   }
 
-  /** Disable tracing. */
   final public void disable_tracing() {
   }
 
-  private void jj_rescan_token() {
+  final private void jj_rescan_token() {
     jj_rescan = true;
     for (int i = 0; i < 2; i++) {
     try {
@@ -1079,7 +1069,7 @@ TokenReturner a;
     jj_rescan = false;
   }
 
-  private void jj_save(int index, int xla) {
+  final private void jj_save(int index, int xla) {
     JJCalls p = jj_2_rtns[index];
     while (p.gen > jj_gen) {
       if (p.next == null) { p = p.next = new JJCalls(); break; }

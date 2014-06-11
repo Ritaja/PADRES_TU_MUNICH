@@ -1,17 +1,22 @@
 <!-- DEMO SPECIFIC SCRIPTS -->
 
 <div id="demo_ex_panel_closed" class="panel" style="display: none;">
-	<a href="#" class="hide" onclick="togglePanels(document.getElementById('demo_ex_panel_closed'), document.getElementById('demo_ex_panel_open'));"><img src="images/expand.png"></a>
+	<a href="#" class="hide"
+		onclick="togglePanels(document.getElementById('demo_ex_panel_closed'), document.getElementById('demo_ex_panel_open'));"><img
+		src="images/expand.png"></a>
 </div>
 <div id="demo_ex_panel_open" class="panel">
-	<a href="#" class="hide" onclick="togglePanels(document.getElementById('demo_ex_panel_closed'), document.getElementById('demo_ex_panel_open'));"><img src="images/collapse.png"></a>
-	<div id="demo_ex_content" class="content" onmousedown="startResize(document.getElementById('demo_ex_form'), document.getElementById('demo_ex_panel_open'), 46);">
+	<a href="#" class="hide"
+		onclick="togglePanels(document.getElementById('demo_ex_panel_closed'), document.getElementById('demo_ex_panel_open'));"><img
+		src="images/collapse.png"></a>
+	<div id="demo_ex_content" class="content"
+		onmousedown="startResize(document.getElementById('demo_ex_form'), document.getElementById('demo_ex_panel_open'), 46);">
 
-	<form id="demo_ex_form">
+		<form id="demo_ex_form">
 
-	<!-- DEMO SPECIFIC ELEMENTS -->
-		<!-- DEMO 0 -->
-		<script type="text/javascript">
+			<!-- DEMO SPECIFIC ELEMENTS -->
+			<!-- DEMO 0 -->
+			<script type="text/javascript">
 			function _runDemo0() {
 				// use js functions that are already available
 				// and use the "presentation" syntax
@@ -36,19 +41,17 @@
 				// are not known here
 			}
 		</script>
-		<input type="button" value="Run Demo 0" onclick="_runDemo0()"; />
+			<input type="button" value="Run Demo 0" onclick="_runDemo0()" ; /> <br />
+			<br />
 
-		<br />
-		<br />
+			<!-- DEMO 1 -->
+			<input type="button" value="Run Demo 1"
+				onclick="runMethod('ca.utoronto.msrg.padres.demo.webclient.demo.examples.ExampleDemo', 'demo1',null,null,defaultErrFunc);" />
 
-		<!-- DEMO 1 -->
-		<input type="button" value="Run Demo 1" onclick="runMethod('ca.utoronto.msrg.padres.demo.webclient.demo.examples.ExampleDemo', 'demo1',null,null,defaultErrFunc);" />
+			<br /> <br />
 
-		<br />
-		<br />
-
-		<!-- DEMO 2 -->
-		<script type="text/javascript">
+			<!-- DEMO 2 -->
+			<script type="text/javascript">
 			// Notice the real Padres syntax is used now since
 			// these values are passed into Java code and used directly
 			var xmlString = createXmlTag("broker", "localhost:1099");
@@ -66,13 +69,11 @@
 				cleanup(xmlHttp);
 			}
 		</script>
-		<input type="button" value="Run Demo 2" onclick="_runDemo2()" />
+			<input type="button" value="Run Demo 2" onclick="_runDemo2()" /> <br />
+			<br />
 
-		<br />
-		<br />
-
-		<!-- DEMO 3 -->
-		<script type="text/javascript">
+			<!-- DEMO 3 -->
+			<script type="text/javascript">
 			var demo3Running;
 			function _startDemo3() {
 				demo3Running = true;
@@ -131,15 +132,15 @@
 				cleanup(xmlHttp);
 			}
 		</script>
-		<input type="button" value="Start Demo 3" onclick="_startDemo3();" />
-		<input type="button" id="pauseDemo3" value="Pause Demo 3" onclick="_togglePauseDemo3();" />
-		<input type="button" value="Stop Demo 3" onclick="_stopDemo3();" />
-	<!-- END DEMOS -->
+			<input type="button" value="Start Demo 3" onclick="_startDemo3();" />
+			<input type="button" id="pauseDemo3" value="Pause Demo 3"
+				onclick="_togglePauseDemo3();" /> <input type="button"
+				value="Stop Demo 3" onclick="_stopDemo3();" />
+			<!-- END DEMOS -->
 
-	<!-- TODO: Instructions for Writing custom demos -->
-	<p>
-	</p>
-	</form>
+			<!-- TODO: Instructions for Writing custom demos -->
+			<p></p>
+		</form>
 
 	</div>
 </div>

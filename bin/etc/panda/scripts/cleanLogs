@@ -1,9 +1,17 @@
 #!/bin/sh
 
+###############################################################################
+#
+# File:         cleanLogs
 # Description:  Removes all log files under the build directory
 # Author:		Alex Cheung (University of Toronto)
+#
 # Notes:		You can use this file as a template by just changing the 
 #				CUSTOMIZABLE CODE section below with your own code
+#
+# Copyright 2006, University of Toronto, all rights reserved.
+#
+###############################################################################
 
 # Parameters
 CALLER=`basename $0`;
@@ -31,7 +39,6 @@ RM="rm -f";
 KILL="kill -n 9";
 EXEC="sshlexec";
 PADRES_PATH=${PADRES_PATH:-padres};
-REMOTE_LOGS_PATH=${REMOTE_LOGS_PATH:-.padres/logs};
 
 
 trap 'cleanUp' EXIT || exit 1;
@@ -44,7 +51,7 @@ trap 'cleanUp' EXIT || exit 1;
 # =====================================================================================
 
 # Formulate what we want to execute	
-CMD="${RM} ${REMOTE_LOGS_PATH}/*";
+CMD="${RM} ${PADRES_PATH}/build/*.log*";
 
 # =====================================================================================	
 

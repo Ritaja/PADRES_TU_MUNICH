@@ -1,5 +1,8 @@
 package de.tum.middleware.padres.loadbalancing;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -109,7 +112,8 @@ public class MediatorImpl extends Client implements Runnable
 			System.out.println("temp ="+temp);
 			if (temp!=null && temp.containsKey("STATUS"))
 				temp.remove("STATUS");
-			temp.put("STATUS", "NA");
+			if (temp!=null)
+				temp.put("STATUS", "NA");
 			/*Iterator<Map.Entry<String, HashMap<String, String>>> it = brokerMap.entrySet().iterator();
 			while(it.hasNext())
 			{
@@ -186,13 +190,89 @@ public class MediatorImpl extends Client implements Runnable
 			System.out.println("Mediator created : " + mediator.clientID);
 			mediator.subscribe(MessageFactory.createSubscriptionFromString("[class,eq,BROKER_INFO]"));
 			while (true) {
-				Thread.sleep(30000);
+				Thread.sleep(45000);
 				String overloadedBrokerID = getOverloadedBroker(brokerMap);
+				String [] neighbors = new String [2];
+				//New broker 
+				sshCallToHost(neighbors, overloadedBrokerID);
 				System.out.println("the overloaded broker = "
 						+ overloadedBrokerID);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	/**
+	 * This function connects to the new system and initiates the BrokerCore.java
+	 * @param entry
+	 */
+	
+	private static boolean sshCallToHost(String [] neighbors, String overloadBrkUri)
+	{
+
+		String dir = System.getProperty("user.dir")+"/etc/scripts/instantiate.sh";
+		boolean result = false;
+		Process proc = null;
+		String cmd[] = null;
+		cmd = new String[5];
+		String address = "localhost";
+		cmd[0] = "nohup";
+		cmd[1] = "sh";
+		String port = "9999";
+		//cmd[2] = dir+script;
+		//cmd[3] = address;
+		//cmd[4] = port+"";
+
+				
+		Runtime run = Runtime.getRuntime();
+
+		try {			
+				System.out.println("testRun >> address : " + address + " and port : " + port);
+				String cmd1 = new String ("./app_kvEcs/instantiate_server.sh "+address+" "+port);
+				System.out.println("script to run ******"+cmd1);
+				proc = run.exec(cmd1);
+			proc.waitFor();
+			String output = readStream(proc.getInputStream());
+			String error = readStream(proc.getErrorStream());
+			System.out.println(" Input Stream = " + output.trim());
+			System.out.println(" Error Stream = " + error.trim());
+			/*System.out.println(" Input Stream = " + output);
+			System.out.println(" Error Stream = " + error.trim());*/
+			if (null==error || "".equals(error))
+			{
+				result = true;
+				System.out.println("Server "+address+":"+port+" started properly!!! \n ");
+			}
+			else{
+				System.out.println("Server "+address+":"+port+" could not be started properly. Reason: "+error);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		finally
+		{
+//			if (proc!=null)
+//			{
+//				proc.destroy();
+//			}
+		}
+		return result;
+	}
+	
+	private static String readStream(InputStream in) {
+		BufferedReader br = new BufferedReader(new InputStreamReader(in));
+		String line = "";
+		StringBuffer sb = new StringBuffer();
+		try {
+			while ((line = br.readLine()) != null) {
+				sb.append(line);
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			//logger.error(e);
+		}
+		return sb.toString();
 	}
 }

@@ -99,29 +99,32 @@ function notifySucc(xmlHttp) {
 
 <div id="shell">
 
-<div id="shell_buttons"><input type="button"
-	value="Connect To Broker" onclick="connect();" style="float: left;" />
-<div id="broker_select_div"
-	style="float: left; padding-left: 10px; display: none; border-left: solid 2px #ccc"><select
-	id="broker_select">
-</select><input type="button" value="Disconnect" onclick="disconnect();" /></div>
-</div>
+	<div id="shell_buttons">
+		<input type="button" value="Connect To Broker" onclick="connect();"
+			style="float: left;" />
+		<div id="broker_select_div"
+			style="float: left; padding-left: 10px; display: none; border-left: solid 2px #ccc">
+			<select id="broker_select">
+			</select><input type="button" value="Disconnect" onclick="disconnect();" />
+		</div>
+	</div>
 
-<div id="shell_prompt" class="box"
-	style="margin-top: 10px; clear: both;">
-<h3>User Input</h3>
-<input id="prompt_input" type="text" size="100"
-	onkeypress="sendCommand(this, event);" /></div>
+	<div id="shell_prompt" class="box"
+		style="margin-top: 10px; clear: both;">
+		<h3>User Input</h3>
+		<input id="prompt_input" type="text" size="100"
+			onkeypress="sendCommand(this, event);" />
+	</div>
 
-<div id="shell_activitiy" class="box">
-<h3>Client Activities</h3>
-<div id="activity_area"></div>
-</div>
+	<div id="shell_activitiy" class="box">
+		<h3>Client Activities</h3>
+		<div id="activity_area"></div>
+	</div>
 
-<div id="shell_notify" class="box">
-<h3>Broker Notifications</h3>
-<div id="notify_area"></div>
-</div>
+	<div id="shell_notify" class="box">
+		<h3>Broker Notifications</h3>
+		<div id="notify_area"></div>
+	</div>
 </div>
 
 <script type="text/javascript">

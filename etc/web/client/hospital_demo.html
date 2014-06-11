@@ -148,23 +148,24 @@ function processPatient(patientName, doctorID) {
  -->
 
 <div id="operation" class="box" style="clear: both;">
-<h3>Choose Your Function:</h3>
-<input type="button" value="Doctor" style="float: left;"
-	onclick="startOperation('doctor');" /> <input type="button"
-	value="MRI Center" style="float: left;"
-	onclick="startOperation('mri');" />
-<div style="clear: both;"></div>
+	<h3>Choose Your Function:</h3>
+	<input type="button" value="Doctor" style="float: left;"
+		onclick="startOperation('doctor');" /> <input type="button"
+		value="MRI Center" style="float: left;"
+		onclick="startOperation('mri');" />
+	<div style="clear: both;"></div>
 </div>
 
 <div id="doctor_box" class="box" style="display: none;">
-<h3>MRI Request</h3>
-Patient's Name: <input id="patient_input" type="text" /><input
-	type="button" value="Send Request" onclick="sendPatientName();" /></div>
+	<h3>MRI Request</h3>
+	Patient's Name: <input id="patient_input" type="text" /><input
+		type="button" value="Send Request" onclick="sendPatientName();" />
+</div>
 
-<div id="notifications" class="box"><span
-	style="font-weight: bold; font-size: 110%; margin: 0 10px 3px 0;">Notifications
-</span> <input type="button" value="Clear" onclick="clearNotifications();" />
-<div id="notify_area" style="height: 500px;"></div>
+<div id="notifications" class="box">
+	<span style="font-weight: bold; font-size: 110%; margin: 0 10px 3px 0;">Notifications
+	</span> <input type="button" value="Clear" onclick="clearNotifications();" />
+	<div id="notify_area" style="height: 500px;"></div>
 </div>
 
 <script type="text/javascript">

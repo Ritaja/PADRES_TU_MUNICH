@@ -124,7 +124,7 @@ public class LogSetup {
 		String fileName = String.format("%s/%s-%s.log", logsDir, className, now);
 		try {
 			RollingFileAppender appender = new RollingFileAppender(layout, fileName);
-			appender.setMaxFileSize("1000KB");
+			appender.setMaxFileSize("1000MB");
 			appender.setMaxBackupIndex(1);
 			classLogger.addAppender(appender);
 		} catch (IOException e) {

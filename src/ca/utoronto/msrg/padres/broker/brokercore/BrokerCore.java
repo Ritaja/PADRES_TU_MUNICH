@@ -45,6 +45,7 @@ import ca.utoronto.msrg.padres.common.message.AdvertisementMessage;
 import ca.utoronto.msrg.padres.common.message.Message;
 import ca.utoronto.msrg.padres.common.message.MessageDestination;
 import ca.utoronto.msrg.padres.common.message.MessageDestination.DestinationType;
+import ca.utoronto.msrg.padres.common.message.Subscription;
 import ca.utoronto.msrg.padres.common.message.parser.MessageFactory;
 import ca.utoronto.msrg.padres.common.message.parser.ParseException;
 import ca.utoronto.msrg.padres.common.message.Publication;
@@ -108,6 +109,10 @@ public class BrokerCore {
 	protected static Logger brokerCoreLogger;
 
 	protected static Logger exceptionLogger;
+	
+	private String uriForOverLoadedBroker = "";
+	
+	private boolean isLoadAcceptingBroker = false; 
 
 	/**
 	 * Constructor for one argument. To take advantage of command line arguments, use the
@@ -123,6 +128,11 @@ public class BrokerCore {
 	public BrokerCore(String[] args, boolean def) throws BrokerCoreException {
 		if (args == null) {
 			throw new BrokerCoreException("Null arguments");
+		}
+		
+		if (args.length > 0 && args[args.length-1].equals("loadbalance"))
+		{
+			isLoadAcceptingBroker = true;
 		}
 		CommandLine cmdLine = new CommandLine(BrokerConfig.getCommandLineKeys());
 		try {
@@ -167,10 +177,12 @@ public class BrokerCore {
 	 */
 	public BrokerCore(String[] args) throws BrokerCoreException {
 		this(args, true);
+		
 	}
 
 	public BrokerCore(BrokerConfig brokerConfig) throws BrokerCoreException {
 		// make sure the logger is initialized before everything else
+		
 		initLog(brokerConfig.getLogDir());
 		brokerCoreLogger.debug("BrokerCore is starting.");
 		this.brokerConfig = brokerConfig;
@@ -219,11 +231,15 @@ public class BrokerCore {
 		startMessageRateTimer();
 		initTimerThread();
 		initHeartBeatPublisher();
-		initHeartBeatSubscriber();
 		initWebInterface();
 		initNeighborConnections();
 		initManagementInterface();
+		initHeartBeatSubscriber();
 		initConsoleInterface();
+		if (isLoadAcceptingBroker)
+		{
+			loadAcceptanceProcess(uriForOverLoadedBroker);
+		}
 		running = true;
 		brokerCoreLogger.info("BrokerCore is started.");
 	}
@@ -480,6 +496,19 @@ public class BrokerCore {
 			ConsoleInterface consoleInterface = new ConsoleInterface(this);
 			consoleInterface.start();
 		}
+	}
+	
+	protected void loadAcceptanceProcess(String uriForOverLoadedBroker) {
+		try{
+		String subStr = "[class,eq, CSStobeMigrated]," + "[from,eq,'"+ uriForOverLoadedBroker + "']";
+		Subscription sub = MessageFactory.createSubscriptionFromString(subStr);
+		SubscriptionMessage msg = new SubscriptionMessage(sub, this.getNewMessageID());
+		this.routeMessage(msg, MessageDestination.INPUTQUEUE);
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+		
 	}
 
 	/**
@@ -800,6 +829,21 @@ public class BrokerCore {
 
 	public boolean isShutdown() {
 		return isShutdown;
+	}
+	
+	public static void startBroker(String[] args)
+	{
+		try {
+			BrokerCore brokerCore = new BrokerCore(args);
+			brokerCore.initialize();
+//			brokerCore.shutdown();
+		} catch (Exception e) {
+			// log the error the system error log file and exit
+			Logger sysErrLogger = Logger.getLogger("SystemError");
+			if (sysErrLogger != null)
+				sysErrLogger.fatal(e.getMessage() + ": " + e);
+			e.printStackTrace();			
+		}
 	}
 
 }
