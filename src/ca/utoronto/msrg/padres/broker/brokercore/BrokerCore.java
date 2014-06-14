@@ -16,7 +16,12 @@ package ca.utoronto.msrg.padres.broker.brokercore;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.swing.Timer;
 
@@ -45,6 +50,7 @@ import ca.utoronto.msrg.padres.common.message.AdvertisementMessage;
 import ca.utoronto.msrg.padres.common.message.Message;
 import ca.utoronto.msrg.padres.common.message.MessageDestination;
 import ca.utoronto.msrg.padres.common.message.MessageDestination.DestinationType;
+import ca.utoronto.msrg.padres.common.message.Subscription;
 import ca.utoronto.msrg.padres.common.message.parser.MessageFactory;
 import ca.utoronto.msrg.padres.common.message.parser.ParseException;
 import ca.utoronto.msrg.padres.common.message.Publication;
@@ -53,6 +59,7 @@ import ca.utoronto.msrg.padres.common.message.SubscriptionMessage;
 import ca.utoronto.msrg.padres.common.util.CommandLine;
 import ca.utoronto.msrg.padres.common.util.LogException;
 import ca.utoronto.msrg.padres.common.util.LogSetup;
+import ca.utoronto.msrg.padres.common.util.Sleep;
 import ca.utoronto.msrg.padres.common.util.timer.TimerThread;
 
 /**
@@ -108,6 +115,11 @@ public class BrokerCore {
 	protected static Logger brokerCoreLogger;
 
 	protected static Logger exceptionLogger;
+	
+	private String uriForOverLoadedBroker = "";
+	
+	private boolean isLoadAcceptingBroker = false; 
+	CssInfo[] infoVector = new CssInfo[100]; // change Array size to subscriptionArray.size()
 
 	/**
 	 * Constructor for one argument. To take advantage of command line arguments, use the
@@ -123,6 +135,11 @@ public class BrokerCore {
 	public BrokerCore(String[] args, boolean def) throws BrokerCoreException {
 		if (args == null) {
 			throw new BrokerCoreException("Null arguments");
+		}
+		
+		if (args.length > 0 && args[args.length-1].equals("loadbalance"))
+		{
+			isLoadAcceptingBroker = true;
 		}
 		CommandLine cmdLine = new CommandLine(BrokerConfig.getCommandLineKeys());
 		try {
@@ -169,8 +186,102 @@ public class BrokerCore {
 		this(args, true);
 	}
 
+	public void cssBitVectorCalculation(){
+		buildCSSVector();
+		List<CssInfo> finalList = new ArrayList<CssInfo>();
+		
+		// Do something with this sleep.... NOT GOOD
+		try {
+			Thread.sleep(10000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		
+		Arrays.sort(infoVector);
+		int sum = 0;
+		int partialSum = 0;
+		for(CssInfo info : infoVector)
+		{
+			sum += info.getMatchingSubscriptions();
+		}
+		for(CssInfo info : infoVector)
+		{
+			if(partialSum <= sum/2)
+			{
+				partialSum += info.getMatchingSubscriptions();
+				finalList.add(info);
+			}
+		}
+		
+		System.out.println("Final subscription list to be offloaded : \n");
+		for(CssInfo info : finalList)
+		{
+			System.out.println(info.getCssClass() + "\n");
+		}
+	}
+	
+	public CssInfo[] buildCSSVector(){
+		System.out.println("BrokerCore >> buildCSSVector");
+		Map<String, SubscriptionMessage> subs =  this.getSubscriptions();
+		System.out.println("BrookerCore >> buildCSSVector >> subscriptions retrieved :" + subs);
+		//String[] subscriptionArray = new String[subs.size()];
+		List<String> subscriptionArray = new ArrayList<String>();
+		//CssInfo[] infoVector = new CssInfo[subscriptionArray.size()];
+		
+		Iterator<Map.Entry<String, SubscriptionMessage>> it = subs.entrySet().iterator();
+		while(it.hasNext())
+		{
+			Entry<String, SubscriptionMessage> thisEntry = it.next();
+			subscriptionArray.add(thisEntry.getValue().getSubscription().getClassVal());
+		}
+		System.out.println("brokerCore >> buildCSSVctor >> subscriptionArray : " + subscriptionArray);
+		//String[] subscriptionArray = {"sports","stocks","movies"};
+		for(int i=0; i<subscriptionArray.size(); i++)
+		{
+			CssInfo info = new CssInfo(subscriptionArray.get(i));
+			infoVector[i] = info;
+		}
+		/*
+		queueManager.setRecordPublication(true);
+		try {
+			Thread.sleep(10000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		queueManager.setRecordPublication(false);
+		*/
+		PublicationSensor pubSensor = new PublicationSensor(this);
+		System.out.println("BrokerCore >> buildCSSVector >> PublicationSensor created");
+		pubSensor.start();
+		System.out.println("BrokerCore >> buildCSSVector >> PublicationSensor started");
+		//checkPublications(infoVector);
+		return infoVector;
+	}
+	
+	public void checkPublications(CssInfo[] infoVector)
+	{
+		infoVector[0].setMatchingSubscriptions(10);
+		infoVector[1].setMatchingSubscriptions(4);
+		infoVector[2].setMatchingSubscriptions(7);
+	}
+	
+	public void notifyBroker(PublicationMessage msg)
+	{
+		System.out.println("Publication Message Received : " + msg.getPublication());
+		System.out.println("Publication Message Received : " + msg.getPublication().getClassVal());
+		for(int i=0; i<infoVector.length; i++)
+		{
+			if(infoVector[i].getCssClass().contains(msg.getPublication().getClassVal()))
+			{
+				infoVector[i].setMatchingSubscriptions(infoVector[i].getMatchingSubscriptions()+1);
+			}
+		}
+	}
+	
 	public BrokerCore(BrokerConfig brokerConfig) throws BrokerCoreException {
 		// make sure the logger is initialized before everything else
+		
 		initLog(brokerConfig.getLogDir());
 		brokerCoreLogger.debug("BrokerCore is starting.");
 		this.brokerConfig = brokerConfig;
@@ -210,22 +321,38 @@ public class BrokerCore {
 		// Initialize components
 		initCommSystem();
 		brokerDestination = new MessageDestination(getBrokerURI(), DestinationType.BROKER);
+		System.out.println("BrokerCore >> initialize >> brokerDestination.getDestinationID : " + brokerDestination.getDestinationID());
+		System.out.println("BrokerCore >> initialize >> brokerDestination.getBrokerID : " + brokerDestination.getBrokerId());
 		initQueueManager();
+		System.out.println("BrokerCore >> initialize >> initQueueManager() done");
 		initRouter();
+		System.out.println("BrokerCore >> initialize >> initRouter() done");
 		initInputQueue();
+		System.out.println("BrokerCore >> initialize >> initInputQueue() done");
 		// System monitor must be started before sending/receiving any messages
 		initSystemMonitor();
+		System.out.println("BrokerCore >> initialize >> initSystemMonitor done");
 		initController();
+		System.out.println("BrokerCore >> initialize >> initController() done");
 		startMessageRateTimer();
+		System.out.println("BrokerCore >> initialize >> startMessageRateTimer() done");
 		initTimerThread();
-		initHeartBeatPublisher();
-		initHeartBeatSubscriber();
+		//System.out.println("BrokerCore >> initialize >> initTimerThread() done");
+		//initHeartBeatPublisher();
+		//System.out.println("BrokerCore >> initialize >> initHeartBeatPublisher() done");
+		//initHeartBeatSubscriber();
+		System.out.println("BrokerCore >> initialize >> initHeartBeatSubscriber() done");
 		initWebInterface();
+		System.out.println("BrokerCore >> initialize >> initWebInterface() done");
 		initNeighborConnections();
+		System.out.println("BrokerCore >> initialize >> initNeighbourConnections() done");
 		initManagementInterface();
+		System.out.println("BrokerCore >> initialize >> initManagementInterface() done");
 		initConsoleInterface();
+		System.out.println("BrokerCore >> initialize >> initConsoleInterface() done");
 		running = true;
 		brokerCoreLogger.info("BrokerCore is started.");
+		System.out.println("BrokerCore is started.");
 	}
 
 	/**
@@ -321,6 +448,7 @@ public class BrokerCore {
 	 */
 	protected void initSystemMonitor() throws BrokerCoreException {
 		systemMonitor = createSystemMonitor();
+		System.out.println("BrokerCore >> initSystemMonitor >> System Monitor is created");
 		brokerCoreLogger.info("System Monitor is created");
 		// register the system monitor with queue manager and input queue, so that they can feed
 		// data into the monitor
@@ -334,6 +462,7 @@ public class BrokerCore {
 		inputQueue.registerSystemMonitor(systemMonitor);
 		systemMonitor.start();
 		brokerCoreLogger.debug("System monitor is starting.");
+		System.out.println("System monitor is starting.");
 		try {
 			systemMonitor.waitUntilStarted();
 		} catch (InterruptedException e) {
@@ -343,7 +472,7 @@ public class BrokerCore {
 		}
 		brokerCoreLogger.info("System monitor is started.");
 	}
-
+	
 	protected SystemMonitor createSystemMonitor() {
 		return new SystemMonitor(this);
 	}
@@ -360,6 +489,7 @@ public class BrokerCore {
 			throw new BrokerCoreException("Controller failed to start", e);
 		}
 		brokerCoreLogger.info("Controller is started.");
+		System.out.println("Controller is started.");
 	}
 
 	protected void startMessageRateTimer() {
@@ -481,6 +611,19 @@ public class BrokerCore {
 			consoleInterface.start();
 		}
 	}
+	
+	protected void loadAcceptanceProcess(String uriForOverLoadedBroker) {
+		try{
+		String subStr = "[class,eq, CSStobeMigrated]," + "[from,eq,'"+ uriForOverLoadedBroker + "']";
+		Subscription sub = MessageFactory.createSubscriptionFromString(subStr);
+		SubscriptionMessage msg = new SubscriptionMessage(sub, this.getNewMessageID());
+		this.routeMessage(msg, MessageDestination.INPUTQUEUE);
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+		
+	}
 
 	/**
 	 * @return The configuration of the broker
@@ -554,6 +697,7 @@ public class BrokerCore {
 	 *            The destination for the message
 	 */
 	public void routeMessage(Message msg, MessageDestination destination) {
+		System.out.println("BrokerCore >> routeMessage >> Routing to msgDestination : " + destination);
 		queueManager.enQueue(msg, destination);
 	}
 
@@ -800,6 +944,21 @@ public class BrokerCore {
 
 	public boolean isShutdown() {
 		return isShutdown;
+	}
+	
+	public static void startBroker(String[] args)
+	{
+		try {
+			BrokerCore brokerCore = new BrokerCore(args);
+			brokerCore.initialize();
+//			brokerCore.shutdown();
+		} catch (Exception e) {
+			// log the error the system error log file and exit
+			Logger sysErrLogger = Logger.getLogger("SystemError");
+			if (sysErrLogger != null)
+				sysErrLogger.fatal(e.getMessage() + ": " + e);
+			e.printStackTrace();			
+		}
 	}
 
 }

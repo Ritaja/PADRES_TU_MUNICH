@@ -46,6 +46,8 @@ public class QueueManager implements MessageListenerInterface {
 	protected Map<MessageDestination, MessageQueue> queues;
 
 	protected SystemMonitor systemMonitor;
+	
+	private boolean recordPublication = false;
 
 	static Logger exceptionLogger = Logger.getLogger("Exception");
 
@@ -85,6 +87,14 @@ public class QueueManager implements MessageListenerInterface {
 				queues.remove(destination);
 			}
 		}
+	}
+	
+	public boolean isRecordPublication() {
+		return recordPublication;
+	}
+
+	public void setRecordPublication(boolean recordPublication) {
+		this.recordPublication = recordPublication;
 	}
 
 	/**
@@ -188,6 +198,10 @@ public class QueueManager implements MessageListenerInterface {
 	@Override
 	public void notifyMessage(Message msg, HostType sourceType) {
 		boolean dropped = false;
+		System.out.println("QueueManager >> notifyMessage >> HostType : " + sourceType);
+		System.out.println("QueueManager >> notifyMessage >> Message Type : " + msg.getType());
+		System.out.println("QueueManager >> notifyMessage >> isRecordPublication : " + isRecordPublication());
+		
 		if (sourceType == HostType.SERVER) {
 			// The broker should not receive advertisement again, which is sent by this broker
 			// before. To avoid the advertisement loop in the cyclic network
@@ -196,6 +210,7 @@ public class QueueManager implements MessageListenerInterface {
 		} else {
 			msg.setMessageID(brokerCore.getNewMessageID());
 			if (msg.getType() == MessageType.SUBSCRIPTION) {
+				System.out.println("================ SUBSCRIPTION MESSAGE RECEIVED =====================");
 				SubscriptionMessage subMsg = (SubscriptionMessage) msg;
 				// TODO: fix this hack for historic queries
 				Map<String, Predicate> predMap = subMsg.getSubscription().getPredicateMap();
@@ -226,6 +241,16 @@ public class QueueManager implements MessageListenerInterface {
 		if (!dropped) {
 			enQueue(msg, MessageDestination.INPUTQUEUE);
 		}
+		
+		if(msg.getType().equals(MessageType.PUBLICATION) && isRecordPublication())
+			brokerCore.notifyBroker((PublicationMessage) msg);
+		if(msg.getType().equals(MessageType.SUBSCRIPTION))
+		{
+			System.out.println("((SubscriptionMessage) msg class : " + ((SubscriptionMessage) msg).getSubscription().getClassVal());
+			if(((SubscriptionMessage) msg).getSubscription().getClassVal().contains("CSStobeMigrated"))
+				brokerCore.cssBitVectorCalculation();
+		}
+		
 	}
 
 	public void clear() {
