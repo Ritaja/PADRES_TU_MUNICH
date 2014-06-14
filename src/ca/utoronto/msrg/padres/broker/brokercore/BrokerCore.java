@@ -241,7 +241,7 @@ public class BrokerCore {
 			loadAcceptanceProcess(uriForOverLoadedBroker);
 		}
 		running = true;
-		brokerCoreLogger.info("BrokerCore is started.");
+		brokerCoreLogger.info("BrokerCore is started."+this.getBrokerURI());
 	}
 
 	/**
@@ -500,7 +500,7 @@ public class BrokerCore {
 	
 	protected void loadAcceptanceProcess(String uriForOverLoadedBroker) {
 		try{
-		String subStr = "[class,eq, CSStobeMigrated]," + "[from,eq,'"+ uriForOverLoadedBroker + "']";
+		String subStr = "[class,eq, CSStobeMigrated"+uriForOverLoadedBroker+"]";
 		Subscription sub = MessageFactory.createSubscriptionFromString(subStr);
 		SubscriptionMessage msg = new SubscriptionMessage(sub, this.getNewMessageID());
 		this.routeMessage(msg, MessageDestination.INPUTQUEUE);

@@ -1,20 +1,23 @@
 #! /bin/bash
 
 # echo arguments
-hostname=$1
-username="hazra"
-port=$2
-#metadata=$3
+overloadBrkUri=$1
+uriLoadAcceptingBrk=$2
+neighbors=$3
+typeOnConn=""
+echo "SSH client starts.............."
+echo " instantiate_server.sh >> Connecting to .... " $uriLoadAcceptingBrk
+echo "Overloaded broker is " $overloadBrkUri
+echo "Neighbors are " $neighbors
 
-directory=
-echo " instantiate.sh >> Connecting to .... " $hostname ":" $port
+if 
 if [ "$hostname" = "localhost" ] || [ "$hostname" = "127.0.0.1" ]; then
 	echo " instantiate.sh >> found local host "
 	echo "current path "
 	pwd
-	#nohup java -jar ms3-server.jar $port INFO &
+	#cd ../../
+	nohup java ca.utoronto.msrg.padres.broker.brokercore.BrokerCore -n $neighbors -ovl $overloadBrkUri loadbalancing &
 	echo " instantiate.sh >> exit status " $!
-	cat tmp.txt
 	echo " instantiate.sh >> process started has PID as" $PID
 else
 	echo " instantiate.sh >> others port =" $port

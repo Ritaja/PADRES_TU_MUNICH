@@ -20,11 +20,14 @@ package ca.utoronto.msrg.padres.broker.monitor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.Serializable;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,6 +40,7 @@ import org.apache.log4j.Logger;
 
 import ca.utoronto.msrg.padres.broker.brokercore.BrokerCore;
 import ca.utoronto.msrg.padres.broker.controller.OverlayRoutingTable;
+import ca.utoronto.msrg.padres.common.comm.CommunicationException;
 import ca.utoronto.msrg.padres.common.comm.MessageQueue;
 import ca.utoronto.msrg.padres.common.comm.OutputQueue;
 import ca.utoronto.msrg.padres.common.message.Advertisement;
@@ -263,7 +267,7 @@ public class SystemMonitor extends Thread {
 			advertiseCSSToBeMigrated();
 
 			systemMonitorLogger.debug("Starting BrokerInfoPublisher.");
-			System.out.println("SystemMonitor >> run >> Starting BrokerInfoPublisher.");
+			System.out.println("SystemMonitor >> run >> Starting BrokerInfoPublisher. Broker ID ="+brokerCore.getBrokerURI());
 			// Start up the automatic broker info publisher
 			brokerInfoPublisher = new BrokerInfoPublisher(brokerCore);
 			brokerInfoPublisher.start();
@@ -298,53 +302,14 @@ public class SystemMonitor extends Thread {
 						}
 						int numberOfNeighbours = ((Set) brokerInfo.get(NEIGBOURS)).size();
 						int numberOfClients = ((Set) brokerInfo.get(CLIENTS)).size();
-						Map <String, SubscriptionMessage> cSS_Subscribed = brokerCore.getSubscriptions();
-						String neighborsUriArr []= brokerCore.getBrokerConfig().getNeighborURIs();
 						
-						//Map <String, SubscriptionMessage> cSS_Subscribed = brokerCore.getSubscriptions();
 						performanceLogger.debug(averageMatchTime + "      " + averageQueueTime
 								+ "      " + incomingPubMsgRate + "      " + incomingControlMsgRate
 								+ "      " + freeMemory + "      " + numberOfAdvs + "      "
 								+ numberOfSubs + "      " + numberOfNeighbours + "      "
-								+ numberOfClients);
-						performanceLogger.debug("####### The neighbors are as follows");
-						String neighborsStr = "";
-						for (int i=0; i<neighborsUriArr.length; i++)
-						{
-							performanceLogger.debug(neighborsUriArr[i]);
-							neighborsStr = neighborsStr + neighborsUriArr[i] + ":";
-						}
-						// Run a loop to extract all the subscriptions of the broker
-						
-						String externalSubsMsgs = "";
-						boolean isAControlElem = true;
-						for (Map.Entry<String, SubscriptionMessage> entry : cSS_Subscribed.entrySet()) 
-						{							
-							performanceLogger.debug("Key = " + entry.getKey() + ", Value = " + entry.getValue());
-							StringTokenizer st = new StringTokenizer(CONTROL_SUBS,",");
-							while (st.hasMoreElements())
-							{
-								String strToSearch = (String)st.nextElement();
-								System.out.println("wthat a....."+strToSearch);
-								String subVal = entry.getValue().getSubscription().toString();
-								System.out.println("subscription value....."+subVal);
-								if(subVal.contains(strToSearch))
-								{
-									isAControlElem = true;
-									break;
-								}
-								else
-								{
-									isAControlElem = false;
-								}
-							}
-							if (!isAControlElem)
-							{
-								externalSubsMsgs = externalSubsMsgs+"Key="+entry.getKey() +", Value = " + entry.getValue().getSubscription().toString()+":";
-							}
-						}
-						System.out.println("Subscription messages in the brokercore ####"+externalSubsMsgs);						
+								+ numberOfClients);		
 					}
+						
 				}
 			};
 			Timer performanceLogtimer = new Timer(log_interval, logPerformanceTaskPerformer);
@@ -945,13 +910,168 @@ public class SystemMonitor extends Thread {
 		int numberOfNeighbours = ((Set) brokerInfo.get(NEIGBOURS)).size();
 		int numberOfClients = ((Set) brokerInfo.get(CLIENTS)).size();
 		String status = "OK";	// For indicating broker's status for load balancing.. 
+	//	Map <String, SubscriptionMessage> cSS_Subscribed = brokerCore.getSubscriptions();
+		
+		String neighborsStr = "";
+	
+		//TODO: Sayan - Need to find a solution for edge brokers where the client need to be migrated to the new load accepting broker.
+		
+		Map <MessageDestination, OutputQueue> clientqueues = brokerCore.getOverlayManager().getORT().getClientQueues();
+		for ( MessageDestination msgDest : clientqueues.keySet())
+		{
+			System.out.println(" Dest ="+msgDest.getDestinationID() + "is a broker ="+msgDest.isBroker() +"  is a DB="+msgDest.isDB()
+					+"  is an internal queue"+msgDest.isInternalQueue()+ "   is a neighbor broker"+msgDest.isNeighborBroker());
+		}
+		
+		
+		Map <MessageDestination, OutputQueue> brokerQueues = brokerCore.getOverlayManager().getORT().getBrokerQueues();
+		Set <String> neighborBrokers = new HashSet <String> ();
+		
+		System.out.println("brokerqueues size="+brokerQueues.size());
+		for ( MessageDestination msgDest : brokerQueues.keySet())
+		{
+			System.out.println(" Dest ="+msgDest.getDestinationID() + " is a neighboring broker ="+msgDest.isNeighborBroker());
+			if (msgDest.isNeighborBroker())
+			{
+				if ("localhost".equalsIgnoreCase(msgDest.getDestinationID()))
+				{
+					String uri = "";
+					if (msgDest.getDestinationID().contains("socket"))
+					{	
+						try {
+							uri = "socket://"+brokerCore.getCommSystem().getLocalIPAddr()+msgDest.getDestinationID().
+									substring(msgDest.getDestinationID().indexOf("localhost")+9);
+							} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+					else
+					{
+						try {
+							uri = "rmi://"+brokerCore.getCommSystem().getLocalIPAddr()+msgDest.getDestinationID().
+									substring(msgDest.getDestinationID().indexOf("localhost")+9);
+							} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+					neighborBrokers.add(uri);
+				}
+				else
+				{
+					neighborBrokers.add(msgDest.getDestinationID());
+				}
+				
+			}
+		}
+		
+		
+		
+		
+		String neighborsUriArr []= brokerCore.getBrokerConfig().getNeighborURIs();
+
+		
+		performanceLogger.debug("####### The neighbors are as follows...The size of neighborsUriArr[]"+neighborsUriArr.length);
+		
+		
+		for (int i=0; i<neighborsUriArr.length; i++)
+		{
+			System.out.println("value of neighborUriArr is "+neighborsUriArr[i]);
+			if (neighborsUriArr[i].contains("localhost"))
+			{
+				String uri = "";
+				if (neighborsUriArr[i].contains("socket"))
+				{	
+					try {
+						uri = "socket://"+brokerCore.getCommSystem().getLocalIPAddr()+neighborsUriArr[i].
+								substring(neighborsUriArr[i].indexOf("localhost")+9);
+						//System.out.println("local host uri= "+uri);
+					
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				else
+				{
+					
+					try {
+						uri = "rmi://"+brokerCore.getCommSystem().getLocalIPAddr()+neighborsUriArr[i].
+								substring(neighborsUriArr[i].indexOf("localhost")+9);
+						System.out.println("local host uri= "+uri);
+						
+						
+					
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				neighborBrokers.add(uri);
+			}
+			else
+			{
+				neighborBrokers.add(neighborsUriArr[i]);
+			}
+			
+		}
+		
+		Iterator <String> itr = neighborBrokers.iterator();
+		
+		while(itr.hasNext())
+		{
+			neighborsStr = neighborsStr + itr.next() + ",";
+		}
+		
+		System.out.println("Neighbors*************="+ neighborsStr);
+		// removing the last comma ,
+		if (neighborsStr.length() > 0)
+		{
+			neighborsStr = neighborsStr.substring(0, neighborsStr.length()-1);
+		}		
+		
+		performanceLogger.debug("Neighbors*************="+ neighborsStr);
+		// Run a loop to extract all the subscriptions of the broker
+		
+		/*	String externalSubsMsgs = "";
+		String allSubClasses = "";
+		boolean isAControlElem = true;
+		for (Map.Entry<String, SubscriptionMessage> entry : cSS_Subscribed.entrySet()) 
+		{							
+			performanceLogger.debug("Key = " + entry.getKey() + ", Value = " + entry.getValue());
+			StringTokenizer st = new StringTokenizer(CONTROL_SUBS,",");
+			while (st.hasMoreElements())
+			{
+				String strToSearch = (String)st.nextElement();
+				String subVal = entry.getValue().getSubscription().getClassVal();
+				allSubClasses = allSubClasses + subVal + ":";
+				//System.out.println("subscription value....."+subVal);
+				if(subVal.equals(strToSearch))
+				{
+					isAControlElem = true;
+					break;
+				}
+				else
+				{
+					isAControlElem = false;
+				}
+			}
+			if (!isAControlElem)
+			{
+				externalSubsMsgs = externalSubsMsgs+"Key="+entry.getKey() +", Value = " + entry.getValue().getSubscription().toString()+":";
+			}
+		}
+		performanceLogger.debug("***All subscription classes ="+allSubClasses);
+		performanceLogger.debug("Subscription messages in the brokercore ####"+externalSubsMsgs);						
+	*/
 		
 		String brokerInformation = "[class,BROKER_INFO]," + "[brokerID,'" + getBrokerID()
 				+ "']," + "[averageMatchTime,'"+averageMatchTime+"'],"+"[averageQueueTime,'"+averageQueueTime+"'],"+
 				"[incomingPubMsgRate,'"+incomingPubMsgRate+"'],"+"[incomingControlMsgRate,'"+incomingControlMsgRate+"'],"
 				+"[freeMemory,'"+freeMemory+"'],"+"[numberOfAdvs,'"+numberOfAdvs+"'],"+"[numberOfSubs,'"+numberOfSubs+"'],"
 				+"[numberOfNeighbours,'"+numberOfNeighbours+"'],"+"[numberOfClients,'"+numberOfClients+"'],"
-				+"[STATUS,'"+status+"']";
+				+"[STATUS,'"+status+"'],"+"[NEIGHBORS,'"+neighborsStr+"']";
 		
 		//Publication pub = MessageFactory.createPublicationFromString("[class,BROKER_INFO]," + "[brokerID,'" + getBrokerID() + "']");
 		Publication pub = MessageFactory.createPublicationFromString(brokerInformation);
@@ -1386,8 +1506,9 @@ public class SystemMonitor extends Thread {
 
 		Advertisement adv;
 		try {
-			adv = MessageFactory.createAdvertisementFromString("[class,eq," + CSS_TO_BE_MIGRATED + "],"
-					+ "[CSSList,isPresent,'Dummy']," + "[from,isPresent,'" + getBrokerID() + "'],");
+			adv = MessageFactory.createAdvertisementFromString("[class,eq,CSStobeMigrated"+getBrokerID() + "],"
+					+ "[CSSList,isPresent,'Dummy'],"); 
+					//+ "[from,isPresent,'" + getBrokerID() + "'],");
 			
 		} catch (ParseException e) {
 			exceptionLogger.error(e.getMessage());
