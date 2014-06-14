@@ -89,6 +89,8 @@ public class BrokerConfig {
 	public static final String CMD_ARG_FLAG_ORDER = "ord";
 
 	private static final String CMD_ARG_FLAG_TOPK = "topk";
+	
+	private static final String CMD_OVERLOAD_ADD = "ovl";
 
 	protected String brokerURI = "socket://localhost:1100/BrokerA";
 
@@ -103,6 +105,8 @@ public class BrokerConfig {
 	protected MatcherType matcherName = MatcherType.NewRete;
 
 	protected String dbPropertyFileName = DBConnector.DEFAULT_DB_PROPS_FILE_PATH;
+	
+	protected String overloadURI = "";
 
 	protected CycleType cycleOption = CycleType.OFF;
 
@@ -199,6 +203,7 @@ public class BrokerConfig {
 		this.totalOrder = origConfig.totalOrder;
 		this.topk = origConfig.topk;
 		this.topkInfo = origConfig.topkInfo;
+		this.overloadURI = origConfig.overloadURI;
 	}
 
 
@@ -316,6 +321,7 @@ public class BrokerConfig {
 		cliKeys.add(CMD_ARG_FLAG_MON_BI_ASINFO + ":");
 		cliKeys.add(CMD_ARG_FLAG_ORDER + ":");
 		cliKeys.add(CMD_ARG_FLAG_TOPK + ":");
+		cliKeys.add(CMD_OVERLOAD_ADD + ":");
 		return cliKeys.toArray(new String[0]);
 	}
 
@@ -363,6 +369,9 @@ public class BrokerConfig {
 			totalOrder = buffer.trim().equals("ON") ? true : false;
 		if ((buffer = cmdLine.getOptionValue(CMD_ARG_FLAG_TOPK)) != null)
 			topk = buffer.trim().equals("ON") ? true : false;
+		
+		if ((buffer = cmdLine.getOptionValue(CMD_OVERLOAD_ADD)) != null)
+			overloadURI = buffer.trim();
 	}
 
 	public boolean checkConfig() throws BrokerCoreException {

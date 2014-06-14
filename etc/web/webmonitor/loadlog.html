@@ -27,96 +27,106 @@ function handleLoadQueueSucc(){
 </script>
 
 <div id="log_file_panel_closed" class="panel" style="display: none;">
-	<a href="#" class="hide" onclick="togglePanels(document.getElementById('log_file_panel_closed'), document.getElementById('log_file_panel_open'));"><img src="images/expand.png"></a>
+	<a href="#" class="hide"
+		onclick="togglePanels(document.getElementById('log_file_panel_closed'), document.getElementById('log_file_panel_open'));"><img
+		src="images/expand.png"></a>
 </div>
 <div id="log_file_panel_open" class="panel">
-	<a href="#" class="hide" onclick="togglePanels(document.getElementById('log_file_panel_closed'), document.getElementById('log_file_panel_open'));"><img src="images/collapse.png"></a>
+	<a href="#" class="hide"
+		onclick="togglePanels(document.getElementById('log_file_panel_closed'), document.getElementById('log_file_panel_open'));"><img
+		src="images/collapse.png"></a>
 	<div id="log_file_option" class="content">
 		<h3>
-		Choose Log File
-		<a href="#" class="hide" onclick="toggleCollapse(document.getElementById('choose_log_file_form'), this)"><img src="images/mini_collapse.png"></a>	
+			Choose Log File <a href="#" class="hide"
+				onclick="toggleCollapse(document.getElementById('choose_log_file_form'), this)"><img
+				src="images/mini_collapse.png"></a>
 		</h3>
-		
-		<form id="choose_log_file_form" onmousedown="startResize(this, document.getElementById('log_file_panel_open'), 46);"
-			onmouseover="highlight(this);"
-			onmouseout="unhighlight(this);"
-		>
+
+		<form id="choose_log_file_form"
+			onmousedown="startResize(this, document.getElementById('log_file_panel_open'), 46);"
+			onmouseover="highlight(this);" onmouseout="unhighlight(this);">
 			<div class="labels">
-				<input type="label" readonly="true" value="Log file:" /> <br />	
-				<input type="label" readonly="true" value="" /> <br />	
-				<input type="label" readonly="true" value="Matching pattern:" /><br />
-				
+				<input type="label" readonly="true" value="Log file:" /> <br /> <input
+					type="label" readonly="true" value="" /> <br /> <input
+					type="label" readonly="true" value="Matching pattern:" /><br />
+
 			</div>
 			<div class="inputs">
 				<div id="logfileOptions">
 					<select id="logfile_text">
-					<option value="messagePath">MessagePath</option>
-					<option value="systemError">SystemError</option>
-					<option value="exception">Exception</option>
+						<option value="messagePath">MessagePath</option>
+						<option value="systemError">SystemError</option>
+						<option value="exception">Exception</option>
 					</select>
-				</div>				
-				<input type="label" readonly="true" value="" />	
-				<input type="text" id="pattern_text"/> <br /> 
+				</div>
+				<input type="label" readonly="true" value="" /> <input type="text"
+					id="pattern_text" /> <br />
 			</div>
 			<div class="right_align">
-			<input type="button" value="Load File" onclick="_loadFile()" />
+				<input type="button" value="Load File" onclick="_loadFile()" />
 			</div>
 		</form>
-		
+
 		<h3>
-		Choose Queue
-		<a href="#" class="hide" onclick="toggleCollapse(document.getElementById('choose_queue_form'), this)"><img src="images/mini_collapse.png"></a>	
+			Choose Queue <a href="#" class="hide"
+				onclick="toggleCollapse(document.getElementById('choose_queue_form'), this)"><img
+				src="images/mini_collapse.png"></a>
 		</h3>
-		
-		<form id="choose_queue_form" onmousedown="startResize(this, document.getElementById('log_file_panel_open'), 46);"
-			onmouseover="highlight(this);"
-			onmouseout="unhighlight(this);"
-		>
+
+		<form id="choose_queue_form"
+			onmousedown="startResize(this, document.getElementById('log_file_panel_open'), 46);"
+			onmouseover="highlight(this);" onmouseout="unhighlight(this);">
 			<div class="labels">
-				<input type="label" readonly="true" value="Queue:" /> <br />	
-				<input type="label" readonly="true" value="" /> <br />	
-				
+				<input type="label" readonly="true" value="Queue:" /> <br /> <input
+					type="label" readonly="true" value="" /> <br />
+
 			</div>
 			<div class="inputs">
 				<div id="queueOptions">
 					<select id="queue_text">
-					<option value="inputQueue">InputQueue</option>
+						<option value="inputQueue">InputQueue</option>
 					</select>
-				</div>				
+				</div>
 			</div>
 			<div class="right_align">
-			<input type="button" value="Load Queue" onclick="_loadQueue()" />
+				<input type="button" value="Load Queue" onclick="_loadQueue()" />
 			</div>
 		</form>
-		
-	</div>	
+
+	</div>
 </div>
 
 <div id="queue_panel_closed" class="panel" style="display: none;">
-	<a href="#" class="hide" onclick="togglePanels(document.getElementById('queue_panel_closed'), document.getElementById('queue_panel_open'));"><img src="images/expand.png"></a>
+	<a href="#" class="hide"
+		onclick="togglePanels(document.getElementById('queue_panel_closed'), document.getElementById('queue_panel_open'));"><img
+		src="images/expand.png"></a>
 </div>
 <div id="queue_panel_open" class="panel">
-	<a href="#" class="hide" onclick="togglePanels(document.getElementById('queue_panel_closed'), document.getElementById('queue_panel_open'));"><img src="images/collapse.png"></a>
+	<a href="#" class="hide"
+		onclick="togglePanels(document.getElementById('queue_panel_closed'), document.getElementById('queue_panel_open'));"><img
+		src="images/collapse.png"></a>
 	<div id="queue_option" class="content">
-		
-		
+
+
 		<h3>
-		Notification
-		<a href="#" class="hide" onclick="toggleCollapse(document.getElementById('notification_form'), this)"><img src="images/mini_collapse.png"></a>
+			Notification <a href="#" class="hide"
+				onclick="toggleCollapse(document.getElementById('notification_form'), this)"><img
+				src="images/mini_collapse.png"></a>
 		</h3>
-		
-		<form id="notification_form" onmousedown="startResize(document.getElementById('notification_area'), document.getElementById('queue_panel_open'), 46);"
-			onmouseover="highlight(this);"
-			onmouseout="unhighlight(this);"
-		>
-		<textarea id="notification_area"></textarea><br />
-		<div class="right_align">
-		<input type="button" value="Clear" onclick="clearText(document.getElementById('notification_area'))" />
-		</div>
-		</form>		
-		
-		
-	</div>	
+
+		<form id="notification_form"
+			onmousedown="startResize(document.getElementById('notification_area'), document.getElementById('queue_panel_open'), 46);"
+			onmouseover="highlight(this);" onmouseout="unhighlight(this);">
+			<textarea id="notification_area"></textarea>
+			<br />
+			<div class="right_align">
+				<input type="button" value="Clear"
+					onclick="clearText(document.getElementById('notification_area'))" />
+			</div>
+		</form>
+
+
+	</div>
 </div>
 
 <script type="text/javascript">

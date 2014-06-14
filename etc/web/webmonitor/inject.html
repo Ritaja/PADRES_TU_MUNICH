@@ -44,108 +44,121 @@ function handleInjectCmdSucc(){
 </script>
 
 <div id="inject_msg_panel_closed" class="panel" style="display: none;">
-	<a href="#" class="hide" onclick="togglePanels(document.getElementById('inject_msg_panel_closed'), document.getElementById('inject_msg_panel_open'));"><img src="images/expand.png"></a>
+	<a href="#" class="hide"
+		onclick="togglePanels(document.getElementById('inject_msg_panel_closed'), document.getElementById('inject_msg_panel_open'));"><img
+		src="images/expand.png"></a>
 </div>
 <div id="inject_msg_panel_open" class="panel">
-	<a href="#" class="hide" onclick="togglePanels(document.getElementById('inject_msg_panel_closed'), document.getElementById('inject_msg_panel_open'));"><img src="images/collapse.png"></a>
+	<a href="#" class="hide"
+		onclick="togglePanels(document.getElementById('inject_msg_panel_closed'), document.getElementById('inject_msg_panel_open'));"><img
+		src="images/collapse.png"></a>
 	<div id="inject_msg_option" class="content">
 		<h3>
-		Inject Message
-		<a href="#" class="hide" onclick="toggleCollapse(document.getElementById('inject_msg_form'), this)"><img src="images/mini_collapse.png"></a>	
+			Inject Message <a href="#" class="hide"
+				onclick="toggleCollapse(document.getElementById('inject_msg_form'), this)"><img
+				src="images/mini_collapse.png"></a>
 		</h3>
-		
-		<form id="inject_msg_form" onmousedown="startResize(this, document.getElementById('inject_msg_panel_open'), 46);"
-			onmouseover="highlight(this);"
-			onmouseout="unhighlight(this);"
-		>
+
+		<form id="inject_msg_form"
+			onmousedown="startResize(this, document.getElementById('inject_msg_panel_open'), 46);"
+			onmouseover="highlight(this);" onmouseout="unhighlight(this);">
 			<div class="labels">
-				<input type="label" readonly="true" value="Message type:" /> <br />	
-				<input type="label" readonly="true" value="" /> <br />	
-				<input type="label" readonly="true" value="Message content:" /><br />
+				<input type="label" readonly="true" value="Message type:" /> <br />
+				<input type="label" readonly="true" value="" /> <br /> <input
+					type="label" readonly="true" value="Message content:" /><br />
 			</div>
 			<div class="inputs">
 				<div id="msgTypeOptions">
 					<select id="msg_type_text">
-					<option value="adv">Advertisement</option>
-					<option value="sub">Subscription</option>
-					<option value="compositeSub">CompositeSubscription</option>
-					<option value="pub">Publiation</option>
+						<option value="adv">Advertisement</option>
+						<option value="sub">Subscription</option>
+						<option value="compositeSub">CompositeSubscription</option>
+						<option value="pub">Publiation</option>
 					</select>
-				</div>				
-				<input type="label" readonly="true" value="" />	
-				<input type="text" id="msg_content_text"/> <br /> 
+				</div>
+				<input type="label" readonly="true" value="" /> <input type="text"
+					id="msg_content_text" /> <br />
 			</div>
 			<div class="right_align">
-			<input type="button" value="Inject Message" onclick="_InjectMsg()" />
+				<input type="button" value="Inject Message" onclick="_InjectMsg()" />
 			</div>
 		</form>
-		
+
 		<h3>
-		Notification
-		<a href="#" class="hide" onclick="toggleCollapse(document.getElementById('inject_msg_form'), this)"><img src="images/mini_collapse.png"></a>
-		
+			Notification <a href="#" class="hide"
+				onclick="toggleCollapse(document.getElementById('inject_msg_form'), this)"><img
+				src="images/mini_collapse.png"></a>
+
 		</h3>
-		
-		<form id="inject_msg_form" onmousedown="startResize(document.getElementById('inject_msg_area'), document.getElementById('inject_msg_panel_open'), 46);"
-			onmouseover="highlight(this);"
-			onmouseout="unhighlight(this);"
-		>
-		<textarea id="inject_msg_area"></textarea><br />
-		<div class="right_align">
-		<input type="button" value="Clear" onclick="clearText(document.getElementById('inject_msg_area'))" />
-		</div>
-		</form>		
-	</div>	
+
+		<form id="inject_msg_form"
+			onmousedown="startResize(document.getElementById('inject_msg_area'), document.getElementById('inject_msg_panel_open'), 46);"
+			onmouseover="highlight(this);" onmouseout="unhighlight(this);">
+			<textarea id="inject_msg_area"></textarea>
+			<br />
+			<div class="right_align">
+				<input type="button" value="Clear"
+					onclick="clearText(document.getElementById('inject_msg_area'))" />
+			</div>
+		</form>
+	</div>
 </div>
 
 <div id="inject_cmd_panel_closed" class="panel" style="display: none;">
-	<a href="#" class="hide" onclick="togglePanels(document.getElementById('inject_cmd_panel_closed'), document.getElementById('inject_cmd_panel_open'));"><img src="images/expand.png"></a>
+	<a href="#" class="hide"
+		onclick="togglePanels(document.getElementById('inject_cmd_panel_closed'), document.getElementById('inject_cmd_panel_open'));"><img
+		src="images/expand.png"></a>
 </div>
 <div id="inject_cmd_panel_open" class="panel">
-	<a href="#" class="hide" onclick="togglePanels(document.getElementById('inject_cmd_panel_closed'), document.getElementById('inject_cmd_panel_open'));"><img src="images/collapse.png"></a>
+	<a href="#" class="hide"
+		onclick="togglePanels(document.getElementById('inject_cmd_panel_closed'), document.getElementById('inject_cmd_panel_open'));"><img
+		src="images/collapse.png"></a>
 	<div id="inject_cmd_option" class="content">
 		<h3>
-		Inject Command
-		<a href="#" class="hide" onclick="toggleCollapse(document.getElementById('inject_cmd_form'), this)"><img src="images/mini_collapse.png"></a>	
+			Inject Command <a href="#" class="hide"
+				onclick="toggleCollapse(document.getElementById('inject_cmd_form'), this)"><img
+				src="images/mini_collapse.png"></a>
 		</h3>
-		
-		<form id="inject_cmd_form" onmousedown="startResize(this, document.getElementById('inject_cmd_panel_open'), 46);"
-			onmouseover="highlight(this);"
-			onmouseout="unhighlight(this);"
-		>
+
+		<form id="inject_cmd_form"
+			onmousedown="startResize(this, document.getElementById('inject_cmd_panel_open'), 46);"
+			onmouseover="highlight(this);" onmouseout="unhighlight(this);">
 			<div class="labels">
-				<input type="label" readonly="true" value="Broker Operation:" /> <br />	
+				<input type="label" readonly="true" value="Broker Operation:" /> <br />
 			</div>
 			<div class="right_align">
-			<input type="button" value="Stop" onclick="_InjectStopCmd()" />
-			<input type="button" value="Resume" onclick="_InjectResumeCmd()" />
-			<input type="button" value="Shutdown" onclick="_InjectShutdownCmd()" />
+				<input type="button" value="Stop" onclick="_InjectStopCmd()" /> <input
+					type="button" value="Resume" onclick="_InjectResumeCmd()" /> <input
+					type="button" value="Shutdown" onclick="_InjectShutdownCmd()" />
 			</div>
 		</form>
-		
+
 		<h3>
-		Retract Publication
-		<a href="#" class="hide" onclick="toggleCollapse(document.getElementById('pub_retract_form'), this)"><img src="images/mini_collapse.png"></a>
-		
+			Retract Publication <a href="#" class="hide"
+				onclick="toggleCollapse(document.getElementById('pub_retract_form'), this)"><img
+				src="images/mini_collapse.png"></a>
+
 		</h3>
-		
-		<form id="pub_retract_form" onmousedown="startResize(this, document.getElementById('inject_cmd_panel_open'), 46);">
-		<div class="labels">
-			<input type="label" readonly="true" value="Class:" /> <br />
-			<input type="label" readonly="true" value="" /> <br />
-		</div>
-		<div class="inputs">
-			<input type="text" id="class_text"/> <br />
-			<input type="label" readonly="true" value="" /> <br />				
-		</div>
-		<div class="right_align">
-		<input type="button" value="Clear" onclick="clearText(document.getElementById('class_text'))" />
-		<input type="button" value="Retract" onclick="_retract()" />
-		</div>			
+
+		<form id="pub_retract_form"
+			onmousedown="startResize(this, document.getElementById('inject_cmd_panel_open'), 46);">
+			<div class="labels">
+				<input type="label" readonly="true" value="Class:" /> <br /> <input
+					type="label" readonly="true" value="" /> <br />
+			</div>
+			<div class="inputs">
+				<input type="text" id="class_text" /> <br /> <input type="label"
+					readonly="true" value="" /> <br />
+			</div>
+			<div class="right_align">
+				<input type="button" value="Clear"
+					onclick="clearText(document.getElementById('class_text'))" /> <input
+					type="button" value="Retract" onclick="_retract()" />
+			</div>
 		</form>
-		
-		
-	</div>	
+
+
+	</div>
 </div>
 
 <script type="text/javascript">

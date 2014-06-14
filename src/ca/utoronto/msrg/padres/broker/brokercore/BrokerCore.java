@@ -337,10 +337,10 @@ public class BrokerCore {
 		startMessageRateTimer();
 		System.out.println("BrokerCore >> initialize >> startMessageRateTimer() done");
 		initTimerThread();
-		//System.out.println("BrokerCore >> initialize >> initTimerThread() done");
-		//initHeartBeatPublisher();
-		//System.out.println("BrokerCore >> initialize >> initHeartBeatPublisher() done");
-		//initHeartBeatSubscriber();
+		System.out.println("BrokerCore >> initialize >> initTimerThread() done");
+		initHeartBeatPublisher();
+		System.out.println("BrokerCore >> initialize >> initHeartBeatPublisher() done");
+		initHeartBeatSubscriber();
 		System.out.println("BrokerCore >> initialize >> initHeartBeatSubscriber() done");
 		initWebInterface();
 		System.out.println("BrokerCore >> initialize >> initWebInterface() done");

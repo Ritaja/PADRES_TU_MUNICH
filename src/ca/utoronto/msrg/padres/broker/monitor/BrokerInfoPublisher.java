@@ -119,7 +119,7 @@ public class BrokerInfoPublisher extends Thread {
 					"[incomingPubMsgRate,isPresent,'dummy'],"+"[incomingControlMsgRate,isPresent,'dummy'],"
 					+"[freeMemory,isPresent,'dummy'],"+"[numberOfAdvs,isPresent,'dummy'],"
 					+"[numberOfSubs,isPresent,'dummy'],"+"[numberOfNeighbours,isPresent,'dummy'],"
-					+"[numberOfClients,isPresent,'dummy'],"+"[STATUS,isPresent,'dummy']";
+					+"[numberOfClients,isPresent,'dummy'],"+"[STATUS,isPresent,'dummy'],"+"[NEIGHBORS,isPresent,'dummy']";
 			
 			advertisement = MessageFactory.createAdvertisementFromString(advString);
 			System.out.println("BrokerInfoPublisher >> sendAdvertisementMessage >> Advertisement sent : " + advertisement);
