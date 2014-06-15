@@ -18,6 +18,7 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -119,8 +120,8 @@ public class BrokerCore {
 	private String uriForOverLoadedBroker = "";
 	
 	private boolean isLoadAcceptingBroker = false; 
-	CssInfo[] infoVector = new CssInfo[100]; // change Array size to subscriptionArray.size()
-
+	//CssInfo[] infoVector = new CssInfo[100]; // change Array size to subscriptionArray.size()
+    List<CssInfo> infoVector = new ArrayList<CssInfo>();
 	/**
 	 * Constructor for one argument. To take advantage of command line arguments, use the
 	 * 'BrokerCore(String[] args)' constructor
@@ -196,8 +197,11 @@ public class BrokerCore {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		
-		Arrays.sort(infoVector);
+		if(this.infoVector == null)
+		{
+			System.out.println("BrokerCore >> cssBitVectorCalculation >> infovector NULL");
+		}
+		Collections.sort(infoVector,new CssInfoComparator());
 		int sum = 0;
 		int partialSum = 0;
 		for(CssInfo info : infoVector)
@@ -220,7 +224,7 @@ public class BrokerCore {
 		}
 	}
 	
-	public CssInfo[] buildCSSVector(){
+	public List<CssInfo> buildCSSVector(){
 		System.out.println("BrokerCore >> buildCSSVector");
 		Map<String, SubscriptionMessage> subs =  this.getSubscriptions();
 		System.out.println("BrookerCore >> buildCSSVector >> subscriptions retrieved :" + subs);
@@ -239,7 +243,7 @@ public class BrokerCore {
 		for(int i=0; i<subscriptionArray.size(); i++)
 		{
 			CssInfo info = new CssInfo(subscriptionArray.get(i));
-			infoVector[i] = info;
+			infoVector.add(info);
 		}
 		/*
 		queueManager.setRecordPublication(true);
@@ -251,6 +255,7 @@ public class BrokerCore {
 		}
 		queueManager.setRecordPublication(false);
 		*/
+		System.out.println("BrokerCore >> buildCSSVector >> infovector"+this.infoVector.size()+">>"+this.infoVector.get(0).getClass());
 		PublicationSensor pubSensor = new PublicationSensor(this);
 		System.out.println("BrokerCore >> buildCSSVector >> PublicationSensor created");
 		pubSensor.start();
@@ -270,11 +275,11 @@ public class BrokerCore {
 	{
 		System.out.println("Publication Message Received : " + msg.getPublication());
 		System.out.println("Publication Message Received : " + msg.getPublication().getClassVal());
-		for(int i=0; i<infoVector.length; i++)
+		for(int i=0; i<infoVector.size(); i++)
 		{
-			if(infoVector[i].getCssClass().contains(msg.getPublication().getClassVal()))
+			if(infoVector.get(i).getCssClass().contains(msg.getPublication().getClassVal()))
 			{
-				infoVector[i].setMatchingSubscriptions(infoVector[i].getMatchingSubscriptions()+1);
+				infoVector.get(i).setMatchingSubscriptions(infoVector.get(i).getMatchingSubscriptions()+1);
 			}
 		}
 	}

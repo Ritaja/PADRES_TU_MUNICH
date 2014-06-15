@@ -1,6 +1,7 @@
 package ca.utoronto.msrg.padres.broker.brokercore;
 
-public class CssInfo implements Comparable<CssInfo>{
+
+public class CssInfo{
 
 	private String cssClass;
 	private int matchingSubscriptions;
@@ -30,13 +31,18 @@ public class CssInfo implements Comparable<CssInfo>{
 		this.cssClass = cssClass;
 	}
 
-	@Override
-	public int compareTo(CssInfo arg0) {
-		int valueA = this.matchingSubscriptions;
-		int valueB = arg0.matchingSubscriptions;
-		if(valueA < valueB)
-			return 1;
-		return -1;
-	}
+//	@Override
+//	public int compareTo(CssInfo arg0) {
+////		int valueA = this.matchingSubscriptions;
+////		int valueB = arg0.matchingSubscriptions;
+////		if(valueA < valueB)
+////			return 1;
+////		return -1;
+//		//arrange in descending order of matching subscriptions
+//		System.out.println("CssInfo >> compareTo >> comparing >> "+this.matchingSubscriptions+"and "+arg0.getMatchingSubscriptions());
+//		int compareMatchingSubscription = arg0.getMatchingSubscriptions();
+//		return compareMatchingSubscription - this.matchingSubscriptions;
+//	}
+
 
 }
