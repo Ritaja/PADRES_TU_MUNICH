@@ -354,10 +354,12 @@ public class BrokerCore {
 		initManagementInterface();
 		System.out.println("BrokerCore >> initialize >> initManagementInterface() done");
 		initConsoleInterface();
-		System.out.println("BrokerCore >> initialize >> initConsoleInterface() done");
+		if (isLoadAcceptingBroker)
+		{
+			loadAcceptanceProcess(uriForOverLoadedBroker);
+		}
 		running = true;
-		brokerCoreLogger.info("BrokerCore is started.");
-		System.out.println("BrokerCore is started.");
+		brokerCoreLogger.info("BrokerCore is started."+this.getBrokerURI());
 	}
 
 	/**
@@ -619,7 +621,7 @@ public class BrokerCore {
 	
 	protected void loadAcceptanceProcess(String uriForOverLoadedBroker) {
 		try{
-		String subStr = "[class,eq, CSStobeMigrated]," + "[from,eq,'"+ uriForOverLoadedBroker + "']";
+		String subStr = "[class,eq, CSStobeMigrated"+uriForOverLoadedBroker+"]";
 		Subscription sub = MessageFactory.createSubscriptionFromString(subStr);
 		SubscriptionMessage msg = new SubscriptionMessage(sub, this.getNewMessageID());
 		this.routeMessage(msg, MessageDestination.INPUTQUEUE);
