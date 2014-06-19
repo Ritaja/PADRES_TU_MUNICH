@@ -100,8 +100,8 @@ public class MediatorImpl extends Client implements Runnable
 			for (String currBroker : overloadedBrokerID)
 			{
 				HashMap <String, String> tempBroker = brokerMap.get(currBroker);
-				System.out.println("The neighbors are ="+tempBroker.get("neighbors"));
-				sshCallToHost(tempBroker.get("neighbors"), currBroker);
+				System.out.println("The neighbors are ="+tempBroker.get("NEIGHBORS"));
+				sshCallToHost(tempBroker.get("NEIGHBORS"), currBroker);
 			}
 			
 		}catch (Exception e)
@@ -240,9 +240,29 @@ public class MediatorImpl extends Client implements Runnable
 	{	
 		System.out.println("inside sshCallToHost");
 		String dir = System.getProperty("user.dir")+"/etc/scripts/instantiate_server.sh";
+		String uriLoadAcceptingBrk = "";
 		boolean result = false;
 		Process proc = null;
-		String uriLoadAcceptingBrk = getAvailableBrokerFromFile();
+		
+		if (overloadBrkUri.contains("socket"))
+		{
+			uriLoadAcceptingBrk = getAvailableBrokerFromFile("socket");
+		}
+		else
+		{
+			uriLoadAcceptingBrk = getAvailableBrokerFromFile("rmi");
+		}
+		
+		
+		if ( uriLoadAcceptingBrk== null || "".equalsIgnoreCase(uriLoadAcceptingBrk))
+		{
+			System.out.println(" There are no available systems to start loadbalancing");
+			return false;
+		}
+		else
+		{
+			System.out.println("The participating broker is "+uriLoadAcceptingBrk);			
+		}
 		
 		if (neighbors==null || "".equalsIgnoreCase(neighbors))
 		{
@@ -294,7 +314,7 @@ public class MediatorImpl extends Client implements Runnable
 		return result;
 	}
 	
-	private static String getAvailableBrokerFromFile()
+	private static String getAvailableBrokerFromFile(String type)
 	{
 		String brokerUri = "";
 		BufferedReader br = null;
@@ -314,7 +334,7 @@ public class MediatorImpl extends Client implements Runnable
 				if (tempStrArr[2].equalsIgnoreCase("Available") && matched)
 				{
 					finalStr = finalStr + tempStrArr[0]+","+tempStrArr[1]+",Working\n";
-					brokerUri = tempStrArr[0]+tempStrArr[1];
+					brokerUri = type+"://"+tempStrArr[0]+"/"+tempStrArr[1];
 					matched = false;
 				}
 				else
@@ -343,6 +363,7 @@ public class MediatorImpl extends Client implements Runnable
 				e.printStackTrace();
 			}
 		}
+		System.out.println("available broker from file "+brokerUri);
 		return brokerUri;
 	}
 	

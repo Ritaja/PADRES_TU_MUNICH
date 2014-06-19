@@ -624,6 +624,7 @@ public class BrokerCore {
 		String subStr = "[class,eq, CSStobeMigrated"+uriForOverLoadedBroker+"]";
 		Subscription sub = MessageFactory.createSubscriptionFromString(subStr);
 		SubscriptionMessage msg = new SubscriptionMessage(sub, this.getNewMessageID());
+		System.out.println("Subscription sent is"+msg.toString());
 		this.routeMessage(msg, MessageDestination.INPUTQUEUE);
 		} catch (Exception e)
 		{
