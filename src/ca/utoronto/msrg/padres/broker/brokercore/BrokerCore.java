@@ -235,8 +235,17 @@ public class BrokerCore {
 		Iterator<Map.Entry<String, SubscriptionMessage>> it = subs.entrySet().iterator();
 		while(it.hasNext())
 		{
+	
 			Entry<String, SubscriptionMessage> thisEntry = it.next();
-			subscriptionArray.add(thisEntry.getValue().getSubscription().getClassVal());
+			String brokerInfoMsg = thisEntry.getValue().getSubscription().getClassVal();
+			if(brokerInfoMsg.equalsIgnoreCase("HEARTBEAT_MANAGER")||brokerInfoMsg.equalsIgnoreCase("NETWORK_DISCOVERY")||brokerInfoMsg.equalsIgnoreCase("BROKER_INFO")||brokerInfoMsg.equalsIgnoreCase("GLOBAL_FD")||brokerInfoMsg.equalsIgnoreCase("BROKER_CONTROL")||brokerInfoMsg.equalsIgnoreCase("CSStobeMigrated")||brokerInfoMsg.equalsIgnoreCase("BROKER_MONITOR") )
+			{
+			  System.out.println("brokerCore >> BrokerINFO message skipped and not added to infovector");
+			}
+			else
+			{
+				subscriptionArray.add(thisEntry.getValue().getSubscription().getClassVal());
+			}
 		}
 		System.out.println("brokerCore >> buildCSSVctor >> subscriptionArray : " + subscriptionArray);
 		//String[] subscriptionArray = {"sports","stocks","movies"};
