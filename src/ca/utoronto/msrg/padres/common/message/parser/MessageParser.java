@@ -18,8 +18,8 @@ public class MessageParser implements MessageParserConstants {
   };
 
   static int sNum = 0;
-  public ParserType _parsertype = ParserType.UNINITIALIZED;
-  public Set<String> attrlist = Collections.synchronizedSet(new HashSet<String>());
+  public static ParserType _parsertype = ParserType.UNINITIALIZED;
+  public static Set<String> attrlist = Collections.synchronizedSet(new HashSet<String>());
 
   public MessageParser(ParserType type, java.io.InputStream stream) {
       this(stream, (String)null);
@@ -43,7 +43,7 @@ public class MessageParser implements MessageParserConstants {
     this(type, new java.io.StringBufferInputStream(stringRep));
   }
 
-  final public Object Input() throws ParseException, ParseException {
+  static final public Object Input() throws ParseException, ParseException {
   Object parseroutput = null;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case 25:
@@ -76,7 +76,7 @@ public class MessageParser implements MessageParserConstants {
 //
 // Composite Subscription
 //
-  final public CompositeSubscription CompositeSubscription(CompositeSubscription comsubparameter) throws ParseException, ParseException {
+  static final public CompositeSubscription CompositeSubscription(CompositeSubscription comsubparameter) throws ParseException, ParseException {
   Token t;
   CompositeSubscription comsubreturn;
   if (comsubparameter == null)
@@ -101,7 +101,7 @@ public class MessageParser implements MessageParserConstants {
     throw new Error("Missing return statement in function");
   }
 
-  final public CompositeSubscription Term(CompositeSubscription comsubparameter) throws ParseException, ParseException {
+  static final public CompositeSubscription Term(CompositeSubscription comsubparameter) throws ParseException, ParseException {
     if (jj_2_2(2)) {
       jj_consume_token(25);
     Subscription sub;
@@ -142,7 +142,7 @@ public class MessageParser implements MessageParserConstants {
 //
 // Subscription or Advertisement (both are equal syntactically)
 //
-  final public Object SubscriptionOrAdvertisement() throws ParseException, ParseException {
+  static final public Object SubscriptionOrAdvertisement() throws ParseException, ParseException {
 TokenReturner a;
     a = ClassAttributeOperatorValueTriple();
     Object obj = null;
@@ -150,7 +150,7 @@ TokenReturner a;
     case SUB_PARSER:
     {
       obj = new Subscription();
-      if (a.val.image.charAt(0) == '\'' || a.val.image.charAt(0) == '\"')
+      if (a.val.image.charAt(0) == '\u005c'' || a.val.image.charAt(0) == '\u005c"')
       {
         String op = a.op.image;
         String value = a.val.image;
@@ -168,7 +168,7 @@ TokenReturner a;
     case ADV_PARSER:
     {
       obj = new Advertisement();
-      if (a.val.image.charAt(0) == '\'' || a.val.image.charAt(0) == '\"')
+      if (a.val.image.charAt(0) == '\u005c'' || a.val.image.charAt(0) == '\u005c"')
       {
         String op = a.op.image;
         String value = a.val.image;
@@ -208,7 +208,7 @@ TokenReturner a;
         {
           case STRING:
             {
-              if (a.val.image.charAt(0) == '\'' || a.val.image.charAt(0) == '\"')
+              if (a.val.image.charAt(0) == '\u005c'' || a.val.image.charAt(0) == '\u005c"')
                     ((Subscription)obj).addPredicate(a.attr.image, new Predicate(a.op.image, a.val.image.substring(1,a.val.image.length()-1)));
               else
                     ((Subscription)obj).addPredicate(a.attr.image, new Predicate(a.op.image, a.val.image));
@@ -240,7 +240,7 @@ TokenReturner a;
         {
           case STRING:
             {
-              if (a.val.image.charAt(0) == '\'' || a.val.image.charAt(0) == '\"')
+              if (a.val.image.charAt(0) == '\u005c'' || a.val.image.charAt(0) == '\u005c"')
               ((Advertisement)obj).addPredicate(a.attr.image, new Predicate(a.op.image, a.val.image.substring(1,a.val.image.length()-1)));
               else
               ((Advertisement)obj).addPredicate(a.attr.image, new Predicate(a.op.image, a.val.image));
@@ -271,11 +271,11 @@ TokenReturner a;
     throw new Error("Missing return statement in function");
   }
 
-  final public Subscription SubCompositeSubscription() throws ParseException, ParseException {
+  static final public Subscription SubCompositeSubscription() throws ParseException, ParseException {
   TokenReturner a;
     a = ClassAttributeOperatorValueTriple();
     Subscription sub = new Subscription();
-    if (a.val.image.charAt(0) == '\'' || a.val.image.charAt(0) == '\"')
+    if (a.val.image.charAt(0) == '\u005c'' || a.val.image.charAt(0) == '\u005c"')
       sub.addPredicate("class", new Predicate(a.op.image, a.val.image.substring(1,a.val.image.length()-1)));
     else
       sub.addPredicate("class", new Predicate(a.op.image, a.val.image));
@@ -300,7 +300,7 @@ TokenReturner a;
         {
           case STRING:
           {
-            if (a.val.image.charAt(0) == '\'' || a.val.image.charAt(0) == '\"')
+            if (a.val.image.charAt(0) == '\u005c'' || a.val.image.charAt(0) == '\u005c"')
                   sub.addPredicate(a.attr.image,
                                                            new Predicate(a.op.image,
                                                                                          a.val.image.substring(1,a.val.image.length()-1)));
@@ -344,7 +344,7 @@ TokenReturner a;
 //
 // Class attribute is mandatory
 //
-  final public TokenReturner ClassAttributeOperatorValueTriple() throws ParseException {
+  static final public TokenReturner ClassAttributeOperatorValueTriple() throws ParseException {
   TokenReturner a = null;
     jj_consume_token(27);
     a = new TokenReturner();
@@ -373,7 +373,7 @@ TokenReturner a;
 //
 // Class attribute is mandatory
 //
-  final public Token ClassAttributeValuePair() throws ParseException {
+  static final public Token ClassAttributeValuePair() throws ParseException {
   Token a;
     jj_consume_token(27);
     jj_consume_token(CLASS);
@@ -396,7 +396,7 @@ TokenReturner a;
     throw new Error("Missing return statement in function");
   }
 
-  final public TokenReturner AttributeOperatorValueTriple2() throws ParseException, ParseException {
+  static final public TokenReturner AttributeOperatorValueTriple2() throws ParseException, ParseException {
   TokenReturner a = null;
     jj_consume_token(27);
       a = new TokenReturner();
@@ -471,7 +471,7 @@ TokenReturner a;
     throw new Error("Missing return statement in function");
   }
 
-  final public TokenReturner AttributeOperatorValueTriple() throws ParseException, ParseException {
+  static final public TokenReturner AttributeOperatorValueTriple() throws ParseException, ParseException {
   TokenReturner a = null;
     jj_consume_token(27);
       a = new TokenReturner();
@@ -584,12 +584,12 @@ TokenReturner a;
 //
 // Publication
 //
-  final public Publication Publication() throws ParseException, ParseException {
+  static final public Publication Publication() throws ParseException, ParseException {
   TokenReturner a = null;
   Token val;
     val = ClassAttributeValuePair();
      Publication pub = new Publication();
-     if (val.image.charAt(0) == '\'' || val.image.charAt(0) == '\"')
+     if (val.image.charAt(0) == '\u005c'' || val.image.charAt(0) == '\u005c"')
        pub.addPair("class", val.image.substring(1,val.image.length()-1));
      else
        pub.addPair("class", val.image);
@@ -605,7 +605,7 @@ TokenReturner a;
       }
       jj_consume_token(COMMA);
       a = AttributeValuePair();
-       if (a.val.image.charAt(0) == '\'' || a.val.image.charAt(0) == '\"')
+       if (a.val.image.charAt(0) == '\u005c'' || a.val.image.charAt(0) == '\u005c"')
        {
          pub.addPair(a.attr.image, a.val.image.substring(1,a.val.image.length()-1));
        }
@@ -654,7 +654,7 @@ TokenReturner a;
     throw new Error("Missing return statement in function");
   }
 
-  final public TokenReturner AttributeValuePair2() throws ParseException, ParseException {
+  static final public TokenReturner AttributeValuePair2() throws ParseException, ParseException {
     jj_consume_token(27);
       TokenReturner a = new TokenReturner();
       a.op = null;
@@ -695,7 +695,7 @@ TokenReturner a;
     throw new Error("Missing return statement in function");
   }
 
-  final public TokenReturner AttributeValuePair() throws ParseException, ParseException {
+  static final public TokenReturner AttributeValuePair() throws ParseException, ParseException {
     jj_consume_token(27);
       TokenReturner a = new TokenReturner();
       a.op = null;
@@ -735,7 +735,7 @@ TokenReturner a;
     throw new Error("Missing return statement in function");
   }
 
-  final public Token SVALUE() throws ParseException {
+  static final public Token SVALUE() throws ParseException {
   Token a;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case AVALSTR:
@@ -753,7 +753,7 @@ TokenReturner a;
     throw new Error("Missing return statement in function");
   }
 
-  final public Token IVALUE() throws ParseException {
+  static final public Token IVALUE() throws ParseException {
   Token a;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case AVALDOUBLE:
@@ -774,26 +774,26 @@ TokenReturner a;
     throw new Error("Missing return statement in function");
   }
 
-  final private boolean jj_2_1(int xla) {
+  static private boolean jj_2_1(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_1(); }
     catch(LookaheadSuccess ls) { return true; }
     finally { jj_save(0, xla); }
   }
 
-  final private boolean jj_2_2(int xla) {
+  static private boolean jj_2_2(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_2(); }
     catch(LookaheadSuccess ls) { return true; }
     finally { jj_save(1, xla); }
   }
 
-  final private boolean jj_3_1() {
+  static private boolean jj_3_1() {
     if (jj_3R_5()) return true;
     return false;
   }
 
-  final private boolean jj_3R_7() {
+  static private boolean jj_3R_7() {
     if (jj_scan_token(27)) return true;
     if (jj_scan_token(CLASS)) return true;
     if (jj_scan_token(COMMA)) return true;
@@ -801,47 +801,59 @@ TokenReturner a;
     return false;
   }
 
-  final private boolean jj_3R_5() {
+  static private boolean jj_3R_5() {
     if (jj_3R_7()) return true;
     return false;
   }
 
-  final private boolean jj_3_2() {
+  static private boolean jj_3_2() {
     if (jj_scan_token(25)) return true;
     if (jj_3R_6()) return true;
     return false;
   }
 
-  final private boolean jj_3R_6() {
+  static private boolean jj_3R_6() {
     if (jj_3R_7()) return true;
     return false;
   }
 
-  public MessageParserTokenManager token_source;
-  SimpleCharStream jj_input_stream;
-  public Token token, jj_nt;
-  private int jj_ntk;
-  private Token jj_scanpos, jj_lastpos;
-  private int jj_la;
-  public boolean lookingAhead = false;
-  private boolean jj_semLA;
-  private int jj_gen;
-  final private int[] jj_la1 = new int[25];
+  static private boolean jj_initialized_once = false;
+  /** Generated Token Manager. */
+  static public MessageParserTokenManager token_source;
+  static SimpleCharStream jj_input_stream;
+  /** Current token. */
+  static public Token token;
+  /** Next token. */
+  static public Token jj_nt;
+  static private int jj_ntk;
+  static private Token jj_scanpos, jj_lastpos;
+  static private int jj_la;
+  static private int jj_gen;
+  static final private int[] jj_la1 = new int[25];
   static private int[] jj_la1_0;
   static {
-      jj_la1_0();
+      jj_la1_init_0();
    }
-   private static void jj_la1_0() {
+   private static void jj_la1_init_0() {
       jj_la1_0 = new int[] {0x2000000,0x8000000,0x2000,0x2000000,0x40,0x40,0x24000,0x24000,0x880,0x124000,0x3e4000,0x1c80,0x880,0x124000,0x2c0000,0x3e4000,0x1400,0x1c80,0x40,0x8000,0x124000,0x3e4000,0x3e4000,0x120000,0x2c0000,};
    }
-  final private JJCalls[] jj_2_rtns = new JJCalls[2];
-  private boolean jj_rescan = false;
-  private int jj_gc = 0;
+  static final private JJCalls[] jj_2_rtns = new JJCalls[2];
+  static private boolean jj_rescan = false;
+  static private int jj_gc = 0;
 
+  /** Constructor with InputStream. */
   public MessageParser(java.io.InputStream stream) {
      this(stream, null);
   }
+  /** Constructor with InputStream and supplied encoding */
   public MessageParser(java.io.InputStream stream, String encoding) {
+    if (jj_initialized_once) {
+      System.out.println("ERROR: Second call to constructor of static parser.  ");
+      System.out.println("       You must either use ReInit() or set the JavaCC option STATIC to false");
+      System.out.println("       during parser generation.");
+      throw new Error();
+    }
+    jj_initialized_once = true;
     try { jj_input_stream = new SimpleCharStream(stream, encoding, 1, 1); } catch(java.io.UnsupportedEncodingException e) { throw new RuntimeException(e); }
     token_source = new MessageParserTokenManager(jj_input_stream);
     token = new Token();
@@ -851,10 +863,12 @@ TokenReturner a;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
-  public void ReInit(java.io.InputStream stream) {
+  /** Reinitialise. */
+  static public void ReInit(java.io.InputStream stream) {
      ReInit(stream, null);
   }
-  public void ReInit(java.io.InputStream stream, String encoding) {
+  /** Reinitialise. */
+  static public void ReInit(java.io.InputStream stream, String encoding) {
     try { jj_input_stream.ReInit(stream, encoding, 1, 1); } catch(java.io.UnsupportedEncodingException e) { throw new RuntimeException(e); }
     token_source.ReInit(jj_input_stream);
     token = new Token();
@@ -864,7 +878,15 @@ TokenReturner a;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
+  /** Constructor. */
   public MessageParser(java.io.Reader stream) {
+    if (jj_initialized_once) {
+      System.out.println("ERROR: Second call to constructor of static parser. ");
+      System.out.println("       You must either use ReInit() or set the JavaCC option STATIC to false");
+      System.out.println("       during parser generation.");
+      throw new Error();
+    }
+    jj_initialized_once = true;
     jj_input_stream = new SimpleCharStream(stream, 1, 1);
     token_source = new MessageParserTokenManager(jj_input_stream);
     token = new Token();
@@ -874,7 +896,8 @@ TokenReturner a;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
-  public void ReInit(java.io.Reader stream) {
+  /** Reinitialise. */
+  static public void ReInit(java.io.Reader stream) {
     jj_input_stream.ReInit(stream, 1, 1);
     token_source.ReInit(jj_input_stream);
     token = new Token();
@@ -884,7 +907,15 @@ TokenReturner a;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
+  /** Constructor with generated Token Manager. */
   public MessageParser(MessageParserTokenManager tm) {
+    if (jj_initialized_once) {
+      System.out.println("ERROR: Second call to constructor of static parser. ");
+      System.out.println("       You must either use ReInit() or set the JavaCC option STATIC to false");
+      System.out.println("       during parser generation.");
+      throw new Error();
+    }
+    jj_initialized_once = true;
     token_source = tm;
     token = new Token();
     jj_ntk = -1;
@@ -893,6 +924,7 @@ TokenReturner a;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
+  /** Reinitialise. */
   public void ReInit(MessageParserTokenManager tm) {
     token_source = tm;
     token = new Token();
@@ -902,7 +934,7 @@ TokenReturner a;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
-  final private Token jj_consume_token(int kind) throws ParseException {
+  static private Token jj_consume_token(int kind) throws ParseException {
     Token oldToken;
     if ((oldToken = token).next != null) token = token.next;
     else token = token.next = token_source.getNextToken();
@@ -927,8 +959,8 @@ TokenReturner a;
   }
 
   static private final class LookaheadSuccess extends java.lang.Error { }
-  final private LookaheadSuccess jj_ls = new LookaheadSuccess();
-  final private boolean jj_scan_token(int kind) {
+  static final private LookaheadSuccess jj_ls = new LookaheadSuccess();
+  static private boolean jj_scan_token(int kind) {
     if (jj_scanpos == jj_lastpos) {
       jj_la--;
       if (jj_scanpos.next == null) {
@@ -949,7 +981,9 @@ TokenReturner a;
     return false;
   }
 
-  final public Token getNextToken() {
+
+/** Get the next Token. */
+  static final public Token getNextToken() {
     if (token.next != null) token = token.next;
     else token = token.next = token_source.getNextToken();
     jj_ntk = -1;
@@ -957,8 +991,9 @@ TokenReturner a;
     return token;
   }
 
-  final public Token getToken(int index) {
-    Token t = lookingAhead ? jj_scanpos : token;
+/** Get the specific Token. */
+  static final public Token getToken(int index) {
+    Token t = token;
     for (int i = 0; i < index; i++) {
       if (t.next != null) t = t.next;
       else t = t.next = token_source.getNextToken();
@@ -966,20 +1001,20 @@ TokenReturner a;
     return t;
   }
 
-  final private int jj_ntk() {
+  static private int jj_ntk() {
     if ((jj_nt=token.next) == null)
       return (jj_ntk = (token.next=token_source.getNextToken()).kind);
     else
       return (jj_ntk = jj_nt.kind);
   }
 
-  private java.util.Vector jj_expentries = new java.util.Vector();
-  private int[] jj_expentry;
-  private int jj_kind = -1;
-  private int[] jj_lasttokens = new int[100];
-  private int jj_endpos;
+  static private java.util.List jj_expentries = new java.util.ArrayList();
+  static private int[] jj_expentry;
+  static private int jj_kind = -1;
+  static private int[] jj_lasttokens = new int[100];
+  static private int jj_endpos;
 
-  private void jj_add_error_token(int kind, int pos) {
+  static private void jj_add_error_token(int kind, int pos) {
     if (pos >= 100) return;
     if (pos == jj_endpos + 1) {
       jj_lasttokens[jj_endpos++] = kind;
@@ -988,31 +1023,26 @@ TokenReturner a;
       for (int i = 0; i < jj_endpos; i++) {
         jj_expentry[i] = jj_lasttokens[i];
       }
-      boolean exists = false;
-      for (java.util.Enumeration e = jj_expentries.elements(); e.hasMoreElements();) {
-        int[] oldentry = (int[])(e.nextElement());
+      jj_entries_loop: for (java.util.Iterator it = jj_expentries.iterator(); it.hasNext();) {
+        int[] oldentry = (int[])(it.next());
         if (oldentry.length == jj_expentry.length) {
-          exists = true;
           for (int i = 0; i < jj_expentry.length; i++) {
             if (oldentry[i] != jj_expentry[i]) {
-              exists = false;
-              break;
+              continue jj_entries_loop;
             }
           }
-          if (exists) break;
+          jj_expentries.add(jj_expentry);
+          break jj_entries_loop;
         }
       }
-      if (!exists) jj_expentries.addElement(jj_expentry);
       if (pos != 0) jj_lasttokens[(jj_endpos = pos) - 1] = kind;
     }
   }
 
-  public ParseException generateParseException() {
-    jj_expentries.removeAllElements();
+  /** Generate ParseException. */
+  static public ParseException generateParseException() {
+    jj_expentries.clear();
     boolean[] la1tokens = new boolean[29];
-    for (int i = 0; i < 29; i++) {
-      la1tokens[i] = false;
-    }
     if (jj_kind >= 0) {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
@@ -1030,7 +1060,7 @@ TokenReturner a;
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;
-        jj_expentries.addElement(jj_expentry);
+        jj_expentries.add(jj_expentry);
       }
     }
     jj_endpos = 0;
@@ -1038,18 +1068,20 @@ TokenReturner a;
     jj_add_error_token(0, 0);
     int[][] exptokseq = new int[jj_expentries.size()][];
     for (int i = 0; i < jj_expentries.size(); i++) {
-      exptokseq[i] = (int[])jj_expentries.elementAt(i);
+      exptokseq[i] = (int[])jj_expentries.get(i);
     }
     return new ParseException(token, exptokseq, tokenImage);
   }
 
-  final public void enable_tracing() {
+  /** Enable tracing. */
+  static final public void enable_tracing() {
   }
 
-  final public void disable_tracing() {
+  /** Disable tracing. */
+  static final public void disable_tracing() {
   }
 
-  final private void jj_rescan_token() {
+  static private void jj_rescan_token() {
     jj_rescan = true;
     for (int i = 0; i < 2; i++) {
     try {
@@ -1069,7 +1101,7 @@ TokenReturner a;
     jj_rescan = false;
   }
 
-  final private void jj_save(int index, int xla) {
+  static private void jj_save(int index, int xla) {
     JJCalls p = jj_2_rtns[index];
     while (p.gen > jj_gen) {
       if (p.next == null) { p = p.next = new JJCalls(); break; }
