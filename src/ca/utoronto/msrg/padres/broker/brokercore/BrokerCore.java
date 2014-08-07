@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.swing.Timer;
 
@@ -226,6 +227,7 @@ public class BrokerCore {
 	
 	public List<CssInfo> buildCSSVector(){
 		System.out.println("BrokerCore >> buildCSSVector");
+        
 		Map<String, SubscriptionMessage> subs =  this.getSubscriptions();
 		System.out.println("BrookerCore >> buildCSSVector >> subscriptions retrieved :" + subs);
 		//String[] subscriptionArray = new String[subs.size()];
@@ -774,6 +776,7 @@ public class BrokerCore {
 	 * @return The set of subscriptions in the broker.
 	 */
 	public Map<String, SubscriptionMessage> getSubscriptions() {
+		System.out.println("BrokerCore >> calling router getSubs");
 		return router.getSubscriptions();
 	}
 

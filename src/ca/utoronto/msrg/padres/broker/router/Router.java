@@ -66,7 +66,7 @@ public abstract class Router {
 
 	protected Map<String, UnadvertisementMessage> workingUnAdvs;
 
-	protected Map<String, SubscriptionMessage> workingSubs;
+	protected ConcurrentHashMap<String, SubscriptionMessage> workingSubs;
 
 	protected Map<String, PublicationMessage> workingPubs;
 
@@ -105,6 +105,7 @@ public abstract class Router {
 	}
 
 	public Map<String, SubscriptionMessage> getSubscriptions() {
+		System.out.println("Router >> getSubs");
 		return workingSubs;
 	}
 
