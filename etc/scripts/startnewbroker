@@ -79,7 +79,7 @@ if [ ! -d ~/.padres ]; then
 	mkdir ~/.padres
 fi
 
-CLASSPATH="${PADRES_HOME}/build/classes/"
+CLASSPATH="${PADRES_HOME}/build/"
 for LIB in `ls ${PADRES_HOME}/lib/*.jar`
 do
 	CLASSPATH="${CLASSPATH}${PATHSEP}${LIB}"

@@ -247,7 +247,9 @@ public class QueueManager implements MessageListenerInterface {
 		if(msg.getType().equals(MessageType.SUBSCRIPTION))
 		{
 			System.out.println("((SubscriptionMessage) msg class : " + ((SubscriptionMessage) msg).getSubscription().getClassVal());
-			if(((SubscriptionMessage) msg).getSubscription().getClassVal().contains("CSStobeMigrated"))
+			String CSScompare = "CSStobeMigrated" + this.brokerCore.getBrokerURI().replace(".", "");
+			System.out.println("((((((((((((((((((((((((((((((((((((((((((((((((((((((((CSScompare"+CSScompare);
+			if(((SubscriptionMessage) msg).getSubscription().getClassVal().equals(CSScompare));
 				brokerCore.cssBitVectorCalculation();
 		}
 		

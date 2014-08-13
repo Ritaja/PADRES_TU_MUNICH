@@ -365,8 +365,12 @@ public class BrokerCore {
 		initManagementInterface();
 		System.out.println("BrokerCore >> initialize >> initManagementInterface() done");
 		initConsoleInterface();
+		uriForOverLoadedBroker = brokerConfig.overloadURI.replace(".", "");
+		
+
 		if (isLoadAcceptingBroker)
 		{
+			System.out.println("<<<<<<<<<<<<< overloaded broker URI"+uriForOverLoadedBroker);
 			loadAcceptanceProcess(uriForOverLoadedBroker);
 		}
 		running = true;
@@ -632,6 +636,8 @@ public class BrokerCore {
 	
 	protected void loadAcceptanceProcess(String uriForOverLoadedBroker) {
 		try{
+		System.out.println("<<<<<<<<<<<<<<<<<<<<<<<  Subscription "
+				+ "sent for newly created broker= CSStobeMigrated"+uriForOverLoadedBroker);
 		String subStr = "[class,eq, CSStobeMigrated"+uriForOverLoadedBroker+"]";
 		Subscription sub = MessageFactory.createSubscriptionFromString(subStr);
 		SubscriptionMessage msg = new SubscriptionMessage(sub, this.getNewMessageID());
