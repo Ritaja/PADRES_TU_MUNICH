@@ -1,0 +1,121 @@
+#!/bin/bash
+
+USAGE="Usage: $(basename $0) -uri broker_uri [-help] [-Xms <mem_min>] [-Xmx <mem_max>] ..."
+
+# function to check whether a parameter is given to an option
+check_arg_missing()
+{
+	if ( [[ $2 == -* ]] || [ -z $2 ] ); then
+		echo "Option $1 requires a parameter"
+		echo $USAGE
+		exit 1
+	fi
+}
+
+# check and set the PADRES_HOME environment value
+if [ -z "$PADRES_HOME" ]
+then
+	PADRES_HOME="$(cd $(dirname "$0")/../.. && pwd)"
+	export PADRES_HOME
+fi
+
+ARGS=$*
+
+# default values
+MEMORY_MIN=128	
+MEMORY_MAX=512	
+BROKER_URI=""
+START_BG="&"
+PATHSEP=':'
+ADDR=$2
+echo "Local address " $ADDR
+PORT=`echo $ADDR | cut -d: -f3 | cut -d/ -f1`
+echo "Port number " $PORT
+
+# Parse the command line arguments
+BROKER_OPT=()
+while [ $# -gt 0 ]; do
+	case "$1" in
+		( -Xms )
+			check_arg_missing $1 $2
+			MEMORY_MIN="$2"
+			shift 2 ;;
+		( -Xmx )
+			check_arg_missing $1 $2
+			MEMORY_MAX="$2"
+			shift 2 ;;
+		( -hostname )
+			check_arg_missing $1 $2
+			ADDR="$2"
+			shift 2 ;;
+		( -uri )
+			check_arg_missing $1 $2
+			BROKER_OPT=( ${BROKER_OPT[@]} $1 $2)
+			BROKER_URI="$2"
+			shift 2 ;;
+		( -cli )
+			BROKER_OPT=( ${BROKER_OPT[@]} $1)
+			START_BG=""
+			shift 1 ;;
+		( -help )
+			cat ${PADRES_HOME}/bin/docs/startbroker.help; 
+			exit ;;
+		( * )
+			BROKER_OPT=( ${BROKER_OPT[@]} $1 )
+			shift 1 ;;
+    esac
+done
+
+# check whether the broker ID is given; if not, exit
+if [ -z $BROKER_URI ]; then
+	echo "You must specify a broker URI";
+	echo $USAGE
+	exit 1
+fi
+
+
+# check and create a user padres directory
+if [ ! -d ~/.padres ]; then
+	mkdir ~/.padres
+fi
+
+CLASSPATH="${PADRES_HOME}/build/classes/"
+for LIB in `ls ${PADRES_HOME}/lib/*.jar`
+do
+	CLASSPATH="${CLASSPATH}${PATHSEP}${LIB}"
+done
+
+
+# Start the broker
+CMD="java -Xms${MEMORY_MIN}m -Xmx${MEMORY_MAX}m 
+          -Djava.rmi.server.codebase=file:${PADRES_HOME}/build/
+          -cp $CLASSPATH -Djava.awt.headless=true 
+          -Djava.security.policy=${PADRES_HOME}/etc/java.policy 
+          ca.utoronto.msrg.padres.broker.brokercore.BrokerCore ${BROKER_OPT[@]}"
+
+# CMD="java -Xms${MEMORY_MIN}m -Xmx${MEMORY_MAX}m -Djava.rmi.server.hostname=${ADDR} 
+#           -cp $CLASSPATH -Djava.awt.headless=true 
+#           -Djava.security.policy=${PADRES_HOME}/etc/java.policy 
+#           ca.utoronto.msrg.padres.broker.brokercore.BrokerCore ${BROKER_OPT[@]}"
+
+
+# PID for the server process
+#pid=`netstat -lntup | grep "$PORT" | cut -d"N" -f 2 | cut -d/ -f1 | sed 's,^ *,,; s, *$,,'`
+
+pid=`netstat -lntup | grep "$PORT" | cut -d"N" -f2 | cut -d"/" -f1`
+
+echo "PID of the process=" "$pid"
+
+# PANDA specific, please do not remove!
+if [ ! -z ${PANDA} ]; then
+	START_BG=""
+fi
+
+# if '-cli' option is given start tbe broker in foreground, otherwise in the background
+if [ -z ${START_BG} ]; then
+	$CMD
+else
+	$CMD &
+fi	
+
+
