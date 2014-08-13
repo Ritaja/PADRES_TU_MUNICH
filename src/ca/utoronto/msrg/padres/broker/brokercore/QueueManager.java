@@ -241,16 +241,21 @@ public class QueueManager implements MessageListenerInterface {
 		if (!dropped) {
 			enQueue(msg, MessageDestination.INPUTQUEUE);
 		}
-		
+		System.out.println("QueueManager >> isRecordPublication : " + isRecordPublication());
 		if(msg.getType().equals(MessageType.PUBLICATION) && isRecordPublication())
+		{
+			System.out.println("QueueManager >> notifyMessage >> ((PublicationMessage) msg class : " + ((PublicationMessage) msg).getPublication().getClassVal());
 			brokerCore.notifyBroker((PublicationMessage) msg);
+		}
 		if(msg.getType().equals(MessageType.SUBSCRIPTION))
 		{
 			System.out.println("((SubscriptionMessage) msg class : " + ((SubscriptionMessage) msg).getSubscription().getClassVal());
 			String CSScompare = "CSStobeMigrated" + this.brokerCore.getBrokerURI().replace(".", "");
 			System.out.println("((((((((((((((((((((((((((((((((((((((((((((((((((((((((CSScompare"+CSScompare);
+			System.out.println("Subscriptions:::::::::: "+ ((SubscriptionMessage) msg).getSubscription());
 			if(((SubscriptionMessage) msg).getSubscription().getClassVal().equals(CSScompare));
 				brokerCore.cssBitVectorCalculation();
+				
 		}
 		
 	}

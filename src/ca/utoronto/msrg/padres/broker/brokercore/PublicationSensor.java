@@ -13,10 +13,11 @@ public class PublicationSensor extends Thread {
 		super.run();
 		System.out.println("PublicationSensor started for broker : " + this.broker);
 		try {
-			QueueManager queueManager = new QueueManager(this.broker);
-			queueManager.setRecordPublication(true);
+			this.broker.queueManager.setRecordPublication(true);
+			System.out.println("Publication Sensor going to sleep.........*********");
 			Thread.sleep(8000);
-			queueManager.setRecordPublication(false);
+			System.out.println("Publication Sensor waking up.........*********");
+			this.broker.queueManager.setRecordPublication(false);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
