@@ -125,6 +125,7 @@ public class QueueManager implements MessageListenerInterface {
 		MessageQueue queue = getMsgQueue(destination);
 		if (queue == null) {
 			if (destination.isBroker()) {
+				System.out.println("QueueHandler>>enQueue>>BROKER DESTINATION:: "+destination);
 				if (destination.equals(brokerCore.getBrokerDestination())) {
 					return;
 				} else {
@@ -253,7 +254,7 @@ public class QueueManager implements MessageListenerInterface {
 			String CSScompare = "CSStobeMigrated" + this.brokerCore.getBrokerURI().replace(".", "");
 			System.out.println("((((((((((((((((((((((((((((((((((((((((((((((((((((((((CSScompare"+CSScompare);
 			System.out.println("Subscriptions:::::::::: "+ ((SubscriptionMessage) msg).getSubscription());
-			if(((SubscriptionMessage) msg).getSubscription().getClassVal().equals(CSScompare));
+			if(((SubscriptionMessage) msg).getSubscription().getClassVal().equals(CSScompare))
 				brokerCore.cssBitVectorCalculation();
 				
 		}

@@ -16,14 +16,15 @@ package ca.utoronto.msrg.padres.broker.brokercore;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.swing.Timer;
 
@@ -41,27 +42,31 @@ import ca.utoronto.msrg.padres.broker.router.Router;
 import ca.utoronto.msrg.padres.broker.router.RouterFactory;
 import ca.utoronto.msrg.padres.broker.router.matching.MatcherException;
 import ca.utoronto.msrg.padres.broker.webmonitor.monitor.WebUIMonitor;
+import ca.utoronto.msrg.padres.client.BrokerState;
+import ca.utoronto.msrg.padres.client.ClientException;
 import ca.utoronto.msrg.padres.common.comm.CommSystem;
 import ca.utoronto.msrg.padres.common.comm.CommunicationException;
 import ca.utoronto.msrg.padres.common.comm.MessageListenerInterface;
 import ca.utoronto.msrg.padres.common.comm.MessageQueue;
+import ca.utoronto.msrg.padres.common.comm.MessageSender;
 import ca.utoronto.msrg.padres.common.comm.NodeAddress;
 import ca.utoronto.msrg.padres.common.comm.OutputQueue;
 import ca.utoronto.msrg.padres.common.comm.QueueHandler;
+import ca.utoronto.msrg.padres.common.comm.CommSystem.HostType;
 import ca.utoronto.msrg.padres.common.message.AdvertisementMessage;
 import ca.utoronto.msrg.padres.common.message.Message;
 import ca.utoronto.msrg.padres.common.message.MessageDestination;
 import ca.utoronto.msrg.padres.common.message.MessageDestination.DestinationType;
-import ca.utoronto.msrg.padres.common.message.Subscription;
-import ca.utoronto.msrg.padres.common.message.parser.MessageFactory;
-import ca.utoronto.msrg.padres.common.message.parser.ParseException;
+import ca.utoronto.msrg.padres.common.message.Predicate;
 import ca.utoronto.msrg.padres.common.message.Publication;
 import ca.utoronto.msrg.padres.common.message.PublicationMessage;
+import ca.utoronto.msrg.padres.common.message.Subscription;
 import ca.utoronto.msrg.padres.common.message.SubscriptionMessage;
+import ca.utoronto.msrg.padres.common.message.parser.MessageFactory;
+import ca.utoronto.msrg.padres.common.message.parser.ParseException;
 import ca.utoronto.msrg.padres.common.util.CommandLine;
 import ca.utoronto.msrg.padres.common.util.LogException;
 import ca.utoronto.msrg.padres.common.util.LogSetup;
-import ca.utoronto.msrg.padres.common.util.Sleep;
 import ca.utoronto.msrg.padres.common.util.timer.TimerThread;
 
 /**
@@ -123,6 +128,8 @@ public class BrokerCore {
 	private boolean isLoadAcceptingBroker = false; 
 	//CssInfo[] infoVector = new CssInfo[100]; // change Array size to subscriptionArray.size()
     List<CssInfo> infoVector = new ArrayList<CssInfo>();
+    
+    protected Map<NodeAddress, BrokerState> brokerStates = new HashMap<NodeAddress, BrokerState>();
 	/**
 	 * Constructor for one argument. To take advantage of command line arguments, use the
 	 * 'BrokerCore(String[] args)' constructor
@@ -194,7 +201,9 @@ public class BrokerCore {
 		
 		// Do something with this sleep.... NOT GOOD
 		try {
+			System.out.println("BrokerCore going to sleep................*******************");
 			Thread.sleep(10000);
+			System.out.println("BrokerCore waking up................*******************");
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -205,6 +214,7 @@ public class BrokerCore {
 		Collections.sort(infoVector,new CssInfoComparator());
 		int sum = 0;
 		int partialSum = 0;
+		System.out.println("infoVector size >>>>>>>>>>> " + infoVector.size());
 		for(CssInfo info : infoVector)
 		{
 			sum += info.getMatchingSubscriptions();
@@ -253,20 +263,13 @@ public class BrokerCore {
 		//String[] subscriptionArray = {"sports","stocks","movies"};
 		for(int i=0; i<subscriptionArray.size(); i++)
 		{
+			System.out.println("BrokerCore >> buildCSSVector >> adding to infovector : " + subscriptionArray.get(i));
 			CssInfo info = new CssInfo(subscriptionArray.get(i));
 			infoVector.add(info);
 		}
-		/*
-		queueManager.setRecordPublication(true);
-		try {
-			Thread.sleep(10000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		queueManager.setRecordPublication(false);
-		*/
-		System.out.println("BrokerCore >> buildCSSVector >> infovector"+this.infoVector.size()+">>"+this.infoVector.get(0).getClass());
+		
+		System.out.println("BrokerCore >> buildCSSVector >> infovector : "+this.infoVector); //+">>"+this.infoVector.get(0).getClass());
+		
 		PublicationSensor pubSensor = new PublicationSensor(this);
 		System.out.println("BrokerCore >> buildCSSVector >> PublicationSensor created");
 		pubSensor.start();
@@ -365,7 +368,7 @@ public class BrokerCore {
 		initManagementInterface();
 		System.out.println("BrokerCore >> initialize >> initManagementInterface() done");
 		initConsoleInterface();
-		uriForOverLoadedBroker = brokerConfig.overloadURI.replace(".", "");
+		uriForOverLoadedBroker = brokerConfig.overloadURI;
 		
 
 		if (isLoadAcceptingBroker)
@@ -634,21 +637,104 @@ public class BrokerCore {
 		}
 	}
 	
+	/**
+	 * @return Initiates the load acceptance process in the new broker
+	 */
 	protected void loadAcceptanceProcess(String uriForOverLoadedBroker) {
 		try{
 		System.out.println("<<<<<<<<<<<<<<<<<<<<<<<  Subscription "
 				+ "sent for newly created broker= CSStobeMigrated"+uriForOverLoadedBroker);
-		String subStr = "[class,eq, CSStobeMigrated"+uriForOverLoadedBroker+"]";
+		String subStr = "[class,eq, CSStobeMigrated"+uriForOverLoadedBroker.replace(".", "")+"]";
 		Subscription sub = MessageFactory.createSubscriptionFromString(subStr);
+		System.out.println("<<<<<<<<<<<< Subscription sent for newly created broker="+sub);
+		System.out.println("Sent at time ="+new Date(System.currentTimeMillis()).getHours()+":"+
+				new Date(System.currentTimeMillis()).getMinutes()+":"+new Date(System.currentTimeMillis()).getSeconds());
+		System.out.println("************** Message ID ="+this.getNewMessageID());
 		SubscriptionMessage msg = new SubscriptionMessage(sub, this.getNewMessageID());
+		msg.setPriority((short)-1);
+		MessageDestination nextHopID = new MessageDestination(this.uriForOverLoadedBroker);
+		nextHopID.addDestinationType(DestinationType.BROKER);
+		msg.setNextHopID(nextHopID);
+		System.out.println("Next hop ID #########"+msg.getNextHopID());
 		System.out.println("Subscription sent is"+msg.toString());
-		this.routeMessage(msg, MessageDestination.INPUTQUEUE);
+	/*	//this.routeMessage(msg, MessageDestination.CONTROLLER);
+		this.routeMessage(msg);*/
+		subscribe(msg, uriForOverLoadedBroker);
+		
+		
 		} catch (Exception e)
 		{
 			e.printStackTrace();
 		}
 		
 	}
+	
+		public SubscriptionMessage subscribe(SubscriptionMessage subMsg, String brokerURI) {		
+
+		
+		try {
+			
+			/*BrokerState brokerState = getBrokerState(brokerURI);
+			if (brokerState == null) {
+				throw new ClientException("Not connected to broker " + brokerURI);
+			}
+			MessageDestination clientDest = MessageDestination.formatClientDestination(clientID,
+					brokerState.getBrokerAddress().getNodeURI());
+			SubscriptionMessage subMsg = new SubscriptionMessage(sub,
+					getNextMessageID(brokerState.getBrokerAddress().getNodeURI()), brokerURI);
+			 */
+			// TODO: fix this hack for historic queries
+			/*Map<String, Predicate> predMap = subMsg.getSubscription().getPredicateMap();
+			if (predMap.get("_start_time") != null) {
+				SimpleDateFormat timeFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy");
+				try {
+					Date startTime = timeFormat.parse((String) (predMap.get("_start_time")).getValue());
+					predMap.remove("_start_time");
+					subMsg.setStartTime(startTime);
+				} catch (java.text.ParseException e) {
+					exceptionLogger.error("Fail to convert Date format : " + e);
+				}
+			}
+			if (predMap.get("_end_time") != null) {
+				SimpleDateFormat timeFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy");
+				try {
+					Date endTime = timeFormat.parse((String) (predMap.get("_end_time")).getValue());
+					predMap.remove("_end_time");
+					subMsg.setEndTime(endTime);
+				} catch (java.text.ParseException e) {
+					exceptionLogger.error("Fail to convert Date format : " + e);
+				}
+			}*/
+			
+			//brokerStates.put(brokerAddress, new BrokerState(brokerAddress));
+			//BrokerState brokerState = getBrokerState(brokerURI);
+			//System.out.println("############ Brokerstate for uri="+brokerURI+" is="+brokerState);
+			MessageSender msgSender = commSystem.getMessageSender(brokerURI);
+			msgSender.connect();
+			System.out.println("********* Message sender="+msgSender.getID());
+			String msgID = msgSender.send(subMsg, HostType.SERVER);
+			//subMsg.setMessageID(msgID);
+			//if (clientConfig.detailState)
+			//	brokerState.addSubMsg(subMsg);
+			
+		} catch (CommunicationException e) {
+			e.printStackTrace();
+		}
+		return subMsg;
+	
+	}
+	
+		
+		public BrokerState getBrokerState(String brokerURI) {
+			NodeAddress brokerAddress = null;
+			try {
+				brokerAddress = NodeAddress.getAddress(brokerURI);
+				
+			} catch (CommunicationException e) {
+				e.printStackTrace();
+			}
+			return brokerStates.get(brokerAddress);
+		}	
 
 	/**
 	 * @return The configuration of the broker
@@ -691,8 +777,8 @@ public class BrokerCore {
 	 */
 	public String getBrokerURI() {
 		try {
-//			return commSystem.getServerURI();
-			return NodeAddress.getAddress(brokerConfig.brokerURI).getNodeURI();
+			return commSystem.getServerURI();
+	//		return NodeAddress.getAddress(brokerConfig.brokerURI).getNodeURI();
 		} catch (CommunicationException e) {
 			e.printStackTrace();
 			System.exit(1);
