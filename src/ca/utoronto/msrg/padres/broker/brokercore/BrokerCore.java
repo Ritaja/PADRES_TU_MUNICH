@@ -229,9 +229,26 @@ public class BrokerCore {
 		}
 		
 		System.out.println("Final subscription list to be offloaded : \n");
+		String Csstemp = "";
 		for(CssInfo info : finalList)
 		{
+			Csstemp += info.getCssClass()+" ";
 			System.out.println(info.getCssClass() + "\n");
+		}
+		
+		String CSStobeMigrated = "[class,'CSStobeMigrated" +this.getBrokerURI().replace(".", "")+"'],"+"[CSSList,'" +Csstemp+"']";
+		try {
+			Publication pub = MessageFactory.createPublicationFromString(CSStobeMigrated);
+			pub.setPayload(pub);
+			// Make the publication message
+			PublicationMessage pubmsg = new PublicationMessage(pub, this.getNewMessageID(),
+					this.getBrokerDestination());
+			this.routeMessage(pubmsg,MessageDestination.INPUTQUEUE);
+			System.out.println("BrokerCore>> CssMigrated:: "+pubmsg);
+			
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 	
@@ -810,6 +827,7 @@ public class BrokerCore {
 	public void routeMessage(Message msg, MessageDestination destination) {
 		System.out.println("BrokerCore >> routeMessage >> Routing to msgDestination : " + destination);
 		queueManager.enQueue(msg, destination);
+		
 	}
 
 	/**
@@ -868,7 +886,7 @@ public class BrokerCore {
 	 * @return The set of subscriptions in the broker.
 	 */
 	public Map<String, SubscriptionMessage> getSubscriptions() {
-		System.out.println("BrokerCore >> calling router getSubs");
+		System.out.println("BrokerCore >> calling router getSubs:: "+router.getSubscriptions());
 		return router.getSubscriptions();
 	}
 

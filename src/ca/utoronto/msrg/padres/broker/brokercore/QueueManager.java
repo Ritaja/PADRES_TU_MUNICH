@@ -124,6 +124,8 @@ public class QueueManager implements MessageListenerInterface {
 		msg.setNextHopID(destination);
 		MessageQueue queue = getMsgQueue(destination);
 		if (queue == null) {
+			System.out.println("QueueManager>>enQueue::destination "+destination.isBroker());
+			System.out.println("QueueManager>>enQueue::destination "+destination.isInternalQueue());
 			if (destination.isBroker()) {
 				System.out.println("QueueHandler>>enQueue>>BROKER DESTINATION:: "+destination);
 				if (destination.equals(brokerCore.getBrokerDestination())) {
@@ -132,7 +134,9 @@ public class QueueManager implements MessageListenerInterface {
 					// Handle invalid destination by creating a queue.
 					// Presumably, a handler will later be created for this queue.
 					queue = createMessageQueue();
+					System.out.println("QueueHandler>>enQueue>>BROKER DESTINATION:: "+destination+"Queue:: "+queue);
 					registerQueue(destination, queue);
+					//queue.notifyAll();
 				}
 			} else {
 				messagePathLogger.fatal("QueueManager: queue for " + destination
@@ -193,6 +197,7 @@ public class QueueManager implements MessageListenerInterface {
 	 * @param msg
 	 */
 	public void enQueue(Message msg) {
+		System.out.println("QueueManager>>enQueue:: "+msg+"nexthopID:: "+msg.getNextHopID());
 		enQueue(msg, msg.getNextHopID());
 	}
 
