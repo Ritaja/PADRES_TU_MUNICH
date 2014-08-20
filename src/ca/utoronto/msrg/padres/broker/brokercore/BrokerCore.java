@@ -136,7 +136,6 @@ public class BrokerCore {
 		return isLoadAcceptingBroker;
 	}
 
-	//CssInfo[] infoVector = new CssInfo[100]; // change Array size to subscriptionArray.size()
     List<CssInfo> infoVector = new ArrayList<CssInfo>();
     
     protected Map<NodeAddress, BrokerState> brokerStates = new HashMap<NodeAddress, BrokerState>();
@@ -247,6 +246,14 @@ public class BrokerCore {
 		}
 		
 		String CSStobeMigrated = "[class,'CSStobeMigrated" +this.getBrokerURI().replace(".", "")+"'],"+"[Accepter,'Dummy'],"+"[CSSList,'" +Csstemp+"']";
+		publishCSStobeMigrated(CSStobeMigrated, newURI);
+	}
+	
+	/*
+	 * This function sends CSStobeMigrated as publication message to load accepting broker
+	 */
+	public void publishCSStobeMigrated(String CSStobeMigrated, String newURI)
+	{
 		try {
 			Publication pub = MessageFactory.createPublicationFromString(CSStobeMigrated);
 			pub.setPayload(pub);
@@ -268,6 +275,9 @@ public class BrokerCore {
 		}
 	}
 	
+	/*
+	 * This function builds the CSSVector and starts Publication Sensor thread
+	 */
 	public List<CssInfo> buildCSSVector(){
 		System.out.println("BrokerCore >> buildCSSVector");
         
@@ -293,7 +303,7 @@ public class BrokerCore {
 			}
 		}
 		System.out.println("brokerCore >> buildCSSVctor >> subscriptionArray : " + subscriptionArray);
-		//String[] subscriptionArray = {"sports","stocks","movies"};
+		
 		for(int i=0; i<subscriptionArray.size(); i++)
 		{
 			System.out.println("BrokerCore >> buildCSSVector >> adding to infovector : " + subscriptionArray.get(i));
@@ -304,20 +314,15 @@ public class BrokerCore {
 		System.out.println("BrokerCore >> buildCSSVector >> infovector : "+this.infoVector); //+">>"+this.infoVector.get(0).getClass());
 		
 		PublicationSensor pubSensor = new PublicationSensor(this);
-		System.out.println("BrokerCore >> buildCSSVector >> PublicationSensor created");
 		pubSensor.start();
 		System.out.println("BrokerCore >> buildCSSVector >> PublicationSensor started");
-		//checkPublications(infoVector);
 		return infoVector;
 	}
 	
-	public void checkPublications(CssInfo[] infoVector)
-	{
-		infoVector[0].setMatchingSubscriptions(10);
-		infoVector[1].setMatchingSubscriptions(4);
-		infoVector[2].setMatchingSubscriptions(7);
-	}
-	
+	/*
+	 * This function is called by QueueManager during Publication Sensing period
+	 * when any publication message is received
+	 */
 	public void notifyBroker(PublicationMessage msg)
 	{
 		System.out.println("Publication Message Received : " + msg.getPublication());
