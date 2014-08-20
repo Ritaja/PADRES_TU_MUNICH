@@ -1508,7 +1508,7 @@ public class SystemMonitor extends Thread {
 		try {
 			System.out.println("<<<<<<< advertisement class is CSStobeMigrated"+ getBrokerID().replace(".", ""));
 			adv = MessageFactory.createAdvertisementFromString("[class,eq,CSStobeMigrated"+getBrokerID().replace(".", "") + "],"
-					+ "[CSSList,isPresent,'Dummy'],"); 
+					+"[Accepter,isPresent,'Dummy'],"+ "[CSSList,isPresent,'Dummy'],"); 
 					//+ "[from,isPresent,'" + getBrokerID() + "'],");
 			
 		} catch (ParseException e) {

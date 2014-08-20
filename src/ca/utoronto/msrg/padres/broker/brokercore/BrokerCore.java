@@ -16,10 +16,14 @@ package ca.utoronto.msrg.padres.broker.brokercore;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -53,6 +57,8 @@ import ca.utoronto.msrg.padres.common.comm.NodeAddress;
 import ca.utoronto.msrg.padres.common.comm.OutputQueue;
 import ca.utoronto.msrg.padres.common.comm.QueueHandler;
 import ca.utoronto.msrg.padres.common.comm.CommSystem.HostType;
+import ca.utoronto.msrg.padres.common.comm.socket.SocketAddress;
+import ca.utoronto.msrg.padres.common.comm.socket.SocketMessageSender;
 import ca.utoronto.msrg.padres.common.message.AdvertisementMessage;
 import ca.utoronto.msrg.padres.common.message.Message;
 import ca.utoronto.msrg.padres.common.message.MessageDestination;
@@ -126,6 +132,10 @@ public class BrokerCore {
 	private String uriForOverLoadedBroker = "";
 	
 	private boolean isLoadAcceptingBroker = false; 
+	public boolean isLoadAcceptingBroker() {
+		return isLoadAcceptingBroker;
+	}
+
 	//CssInfo[] infoVector = new CssInfo[100]; // change Array size to subscriptionArray.size()
     List<CssInfo> infoVector = new ArrayList<CssInfo>();
     
@@ -195,7 +205,7 @@ public class BrokerCore {
 		this(args, true);
 	}
 
-	public void cssBitVectorCalculation(){
+	public void cssBitVectorCalculation(String newURI){
 		buildCSSVector();
 		List<CssInfo> finalList = new ArrayList<CssInfo>();
 		
@@ -236,7 +246,7 @@ public class BrokerCore {
 			System.out.println(info.getCssClass() + "\n");
 		}
 		
-		String CSStobeMigrated = "[class,'CSStobeMigrated" +this.getBrokerURI().replace(".", "")+"'],"+"[CSSList,'" +Csstemp+"']";
+		String CSStobeMigrated = "[class,'CSStobeMigrated" +this.getBrokerURI().replace(".", "")+"'],"+"[Accepter,'Dummy'],"+"[CSSList,'" +Csstemp+"']";
 		try {
 			Publication pub = MessageFactory.createPublicationFromString(CSStobeMigrated);
 			pub.setPayload(pub);
@@ -244,9 +254,15 @@ public class BrokerCore {
 			PublicationMessage pubmsg = new PublicationMessage(pub, this.getNewMessageID(),
 					this.getBrokerDestination());
 			this.routeMessage(pubmsg,MessageDestination.INPUTQUEUE);
+			//SocketMessageSender msgSender = new SocketMessageSender(newURI);
+			MessageSender msgSender = commSystem.getMessageSender(newURI);
+			msgSender.connect();
+			System.out.println("********* Message sender="+msgSender.getID());
+			String msgID = msgSender.send(pubmsg, HostType.SERVER);
 			System.out.println("BrokerCore>> CssMigrated:: "+pubmsg);
+				
 			
-		} catch (ParseException e) {
+		} catch (ParseException | CommunicationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -387,6 +403,20 @@ public class BrokerCore {
 		initConsoleInterface();
 		uriForOverLoadedBroker = brokerConfig.overloadURI;
 		
+		Enumeration<NetworkInterface> interfaces;
+		try {
+			interfaces = NetworkInterface.getNetworkInterfaces();
+		
+		while (interfaces.hasMoreElements()) {
+			Enumeration<InetAddress> addresses = interfaces.nextElement().getInetAddresses();
+			while (addresses.hasMoreElements()) {
+				System.out.println("BrokerCore>>LocalAddress: "+addresses.nextElement());
+			}
+		}
+		} catch (SocketException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 		if (isLoadAcceptingBroker)
 		{
@@ -661,7 +691,7 @@ public class BrokerCore {
 		try{
 		System.out.println("<<<<<<<<<<<<<<<<<<<<<<<  Subscription "
 				+ "sent for newly created broker= CSStobeMigrated"+uriForOverLoadedBroker);
-		String subStr = "[class,eq, CSStobeMigrated"+uriForOverLoadedBroker.replace(".", "")+"]";
+		String subStr = "[class,eq, CSStobeMigrated"+uriForOverLoadedBroker.replace(".", "")+"],"+"[Accepter,eq, '"+this.getBrokerID()+"']";
 		Subscription sub = MessageFactory.createSubscriptionFromString(subStr);
 		System.out.println("<<<<<<<<<<<< Subscription sent for newly created broker="+sub);
 		System.out.println("Sent at time ="+new Date(System.currentTimeMillis()).getHours()+":"+

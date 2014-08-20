@@ -124,8 +124,8 @@ public class QueueManager implements MessageListenerInterface {
 		msg.setNextHopID(destination);
 		MessageQueue queue = getMsgQueue(destination);
 		if (queue == null) {
-			System.out.println("QueueManager>>enQueue::destination "+destination.isBroker());
-			System.out.println("QueueManager>>enQueue::destination "+destination.isInternalQueue());
+			//System.out.println("QueueManager>>enQueue::destination "+destination.isBroker());
+			//System.out.println("QueueManager>>enQueue::destination "+destination.isInternalQueue());
 			if (destination.isBroker()) {
 				System.out.println("QueueHandler>>enQueue>>BROKER DESTINATION:: "+destination);
 				if (destination.equals(brokerCore.getBrokerDestination())) {
@@ -208,6 +208,7 @@ public class QueueManager implements MessageListenerInterface {
 		System.out.println("QueueManager >> notifyMessage >> Message Type : " + msg.getType());
 		System.out.println("QueueManager >> notifyMessage >> isRecordPublication : " + isRecordPublication());
 		
+		
 		if (sourceType == HostType.SERVER) {
 			// The broker should not receive advertisement again, which is sent by this broker
 			// before. To avoid the advertisement loop in the cyclic network
@@ -253,15 +254,27 @@ public class QueueManager implements MessageListenerInterface {
 			System.out.println("QueueManager >> notifyMessage >> ((PublicationMessage) msg class : " + ((PublicationMessage) msg).getPublication().getClassVal());
 			brokerCore.notifyBroker((PublicationMessage) msg);
 		}
+		if(msg.getType().equals(MessageType.PUBLICATION) && (((PublicationMessage) msg).getPublication().getClassVal()).contains("CSStobeMigrated") && this.brokerCore.isLoadAcceptingBroker())
+		{
+			System.out.println("QueueManager >> notifyMessage >> ((PublicationMessage) msg class : " + ((PublicationMessage) msg).getPublication().getClassVal());
+			brokerCore.notifyBroker((PublicationMessage) msg);
+		}
 		if(msg.getType().equals(MessageType.SUBSCRIPTION))
 		{
 			System.out.println("((SubscriptionMessage) msg class : " + ((SubscriptionMessage) msg).getSubscription().getClassVal());
 			String CSScompare = "CSStobeMigrated" + this.brokerCore.getBrokerURI().replace(".", "");
 			System.out.println("((((((((((((((((((((((((((((((((((((((((((((((((((((((((CSScompare"+CSScompare);
 			System.out.println("Subscriptions:::::::::: "+ ((SubscriptionMessage) msg).getSubscription());
+			String AcepterURI = null;
+			String ExcludeURI = null;
 			if(((SubscriptionMessage) msg).getSubscription().getClassVal().equals(CSScompare))
-				brokerCore.cssBitVectorCalculation();
-				
+			{
+			AcepterURI = (((SubscriptionMessage) msg).getSubscription().getPredicateMap().toString()).substring(13);
+			ExcludeURI = ", class=eq CSStobeMigrated"+this.brokerCore.getBrokerURI()+"}";
+			String NewURI = AcepterURI.replace(", class=eq CSStobeMigrated"+this.brokerCore.getBrokerURI()+"}", " ");
+			System.out.println("PREDICATE::: "+NewURI);
+				brokerCore.cssBitVectorCalculation("socket://192.168.0.101:9995/newbrokerA");
+			}
 		}
 		
 	}
