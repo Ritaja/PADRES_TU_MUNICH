@@ -257,7 +257,7 @@ public class QueueManager implements MessageListenerInterface {
 		if(msg.getType().equals(MessageType.PUBLICATION) && (((PublicationMessage) msg).getPublication().getClassVal()).contains("CSStobeMigrated") && this.brokerCore.isLoadAcceptingBroker())
 		{
 			System.out.println("QueueManager >> notifyMessage >> ((PublicationMessage) msg class : " + ((PublicationMessage) msg).getPublication().getClassVal());
-			brokerCore.notifyBroker((PublicationMessage) msg);
+			brokerCore.subscribeCSStoMigrate((PublicationMessage) msg);
 		}
 		if(msg.getType().equals(MessageType.SUBSCRIPTION))
 		{

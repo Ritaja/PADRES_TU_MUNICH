@@ -79,8 +79,8 @@ import ca.utoronto.msrg.padres.common.util.timer.TimerThread;
  * The core of the broker. The broker is instantiated through this class. BrokerCore provides unique
  * message ID generation, component location, message routing.
  * 
- * @author eli
- * 
+ * @author eli, Nishant Gupta, Ritaja Sengupta, Sayan Hazra
+ *
  */
 public class BrokerCore {
 
@@ -682,6 +682,16 @@ public class BrokerCore {
 			ConsoleInterface consoleInterface = new ConsoleInterface(this);
 			consoleInterface.start();
 		}
+	}
+	
+	/**
+	 * @param Publication msg containing CSStobeMigrated
+	 * @return null
+	 */
+	protected void subscribeCSStoMigrate(PublicationMessage msg)
+	{
+	 SubscriptionMessage temp;
+	 System.out.println("PUBLICATION VALUE:: "+msg.getPublication());
 	}
 	
 	/**
