@@ -208,7 +208,10 @@ public class QueueManager implements MessageListenerInterface {
 		System.out.println("QueueManager >> notifyMessage >> Message Type : " + msg.getType());
 		System.out.println("QueueManager >> notifyMessage >> isRecordPublication : " + isRecordPublication());
 		
-		
+		if(sourceType == HostType.SERVER && msg.getType() == MessageType.SUBSCRIPTION)
+		{
+			System.out.println("QueueHandler>>RECIEVED SUBSCRIPTION: "+((SubscriptionMessage) msg).getSubscription().getClassVal());
+		}
 		if (sourceType == HostType.SERVER) {
 			// The broker should not receive advertisement again, which is sent by this broker
 			// before. To avoid the advertisement loop in the cyclic network
@@ -273,7 +276,7 @@ public class QueueManager implements MessageListenerInterface {
 			ExcludeURI = ", class=eq CSStobeMigrated"+this.brokerCore.getBrokerURI()+"}";
 			String NewURI = AcepterURI.replace(", class=eq CSStobeMigrated"+this.brokerCore.getBrokerURI()+"}", " ");
 			System.out.println("PREDICATE::: "+NewURI);
-				brokerCore.cssBitVectorCalculation("socket://192.168.0.101:9995/newbrokerA");
+				brokerCore.cssBitVectorCalculation("socket://10.180.7.14:9995/newbrokerA");
 			}
 		}
 		
