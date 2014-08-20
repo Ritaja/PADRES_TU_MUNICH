@@ -274,9 +274,9 @@ public class QueueManager implements MessageListenerInterface {
 			{
 			AcepterURI = (((SubscriptionMessage) msg).getSubscription().getPredicateMap().toString()).substring(13);
 			ExcludeURI = ", class=eq CSStobeMigrated"+this.brokerCore.getBrokerURI()+"}";
-			String NewURI = AcepterURI.replace(", class=eq CSStobeMigrated"+this.brokerCore.getBrokerURI()+"}", " ");
-			System.out.println("PREDICATE::: "+NewURI);
-				brokerCore.cssBitVectorCalculation("socket://10.180.7.14:9995/newbrokerA");
+			String newBrokerURIArr[] = AcepterURI.split(",");
+            System.out.println("PREDICATE::: "+newBrokerURIArr[0]);
+			brokerCore.cssBitVectorCalculation(newBrokerURIArr[0]);
 			}
 		}
 		
