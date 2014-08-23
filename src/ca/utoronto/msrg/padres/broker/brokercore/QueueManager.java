@@ -218,9 +218,9 @@ public class QueueManager implements MessageListenerInterface {
 				+ sourceType);
 		System.out.println("QueueManager >> notifyMessage >> Message Type : "
 				+ msg.getType());
-		System.out
-				.println("QueueManager >> notifyMessage >> isRecordPublication : "
+		System.out.println("QueueManager >> notifyMessage >> isRecordPublication : "
 						+ isRecordPublication());
+		
 
 		if (sourceType == HostType.SERVER
 				&& msg.getType() == MessageType.SUBSCRIPTION) {
@@ -238,8 +238,8 @@ public class QueueManager implements MessageListenerInterface {
 		} else {
 			msg.setMessageID(brokerCore.getNewMessageID());
 			if (msg.getType() == MessageType.SUBSCRIPTION) {
-				System.out
-						.println("================ SUBSCRIPTION MESSAGE RECEIVED =====================");
+				System.out.println("================ SUBSCRIPTION MESSAGE RECEIVED =====================");
+				System.out.println("<<<<<<<< QueueManager --- notifyMessage ----- Subscription||"+ msg.toString());
 				SubscriptionMessage subMsg = (SubscriptionMessage) msg;
 				// TODO: fix this hack for historic queries
 				Map<String, Predicate> predMap = subMsg.getSubscription()
@@ -275,16 +275,24 @@ public class QueueManager implements MessageListenerInterface {
 		if (!dropped) {
 			enQueue(msg, MessageDestination.INPUTQUEUE);
 		}
-		System.out.println("QueueManager >> isRecordPublication : "
-				+ isRecordPublication());
-		if (msg.getType().equals(MessageType.PUBLICATION)
-				&& isRecordPublication()) {
+		
+		System.out.println("QueueManager >> isRecordPublication : "	+ isRecordPublication());
+		
+		if (msg.getType().equals(MessageType.PUBLICATION))
+		{
+			System.out.println("<<<<<<<< QueueManager --- notifyMessage ----- Publication||"+ msg.toString());
+			
+		}
+		
+		if (msg.getType().equals(MessageType.PUBLICATION) && isRecordPublication()) {
 			System.out
 					.println("QueueManager >> notifyMessage >> ((PublicationMessage) msg class : "
 							+ ((PublicationMessage) msg).getPublication()
 									.getClassVal());
 			brokerCore.notifyBroker((PublicationMessage) msg);
 		}
+		
+		
 		if (msg.getType().equals(MessageType.PUBLICATION)
 				&& (((PublicationMessage) msg).getPublication().getClassVal())
 						.contains("CSStobeMigrated")
@@ -295,10 +303,12 @@ public class QueueManager implements MessageListenerInterface {
 									.getClassVal());
 			brokerCore.subscribeCSStoMigrate((PublicationMessage) msg);
 		}
+		
 		if (msg.getType().equals(MessageType.SUBSCRIPTION)) {
+			System.out.println("Queue manager---notifyMessage----Subscription received="+msg.toString());
+			
 			System.out.println("((SubscriptionMessage) msg class : "
-					+ ((SubscriptionMessage) msg).getSubscription()
-							.getClassVal());
+					+ ((SubscriptionMessage) msg).getSubscription().getClassVal());
 			String CSScompare = "CSStobeMigrated"
 					+ this.brokerCore.getBrokerURI().replace(".", "");
 			//System.out.println("((((((((((((((((((((((((((((((((((((((((((((((((((((((((CSScompare"+ CSScompare);
