@@ -690,7 +690,7 @@ public class BrokerCore {
 	}
 	
 	/**
-	 * @param Publication msg containing CSStobeMigrated
+	 * @param Subscription msg containing CSStobeMigrated
 	 * @return null
 	 */
 	protected void subscribeCSStoMigrate(PublicationMessage msg)
@@ -698,8 +698,8 @@ public class BrokerCore {
 	 String CSSlistArray[]=(msg.getPublication().toString()).split(",");
 	 CSSlistArray = CSSlistArray[1].substring(1, CSSlistArray.length-1).split(",");
 	 System.out.println("PUBLICATION VALUE:: "+msg.getPublication());
-	 System.out.println("PUBLICATION VALUE:: "+CSSlistArray.length+" second: ");
-	 if(CSSlistArray.length != 1)
+	 System.out.println("########### Published CSS classes array "+CSSlistArray.length+" records ");
+	 if(CSSlistArray.length > 0)
 	 {
 		String SubscribeCss; 
 		for(int i=0;i<CSSlistArray.length;i++)
@@ -707,17 +707,15 @@ public class BrokerCore {
 			SubscribeCss = CSSlistArray[i];
 			SubscriptionMessage toSubscribeCSS;
 			try {
-				toSubscribeCSS = new SubscriptionMessage(SubscribeCss);
-			
-			     routeMessage(toSubscribeCSS);
-			
+				System.out.println("<<<<<<<<<<<<<<<<<<<<<<<   Sending subscription for="+SubscribeCss);
+				toSubscribeCSS = new SubscriptionMessage(SubscribeCss);			
+			    routeMessage(toSubscribeCSS);			
 			} catch (ParseException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
-	 }
-	 
+	 }	 
 	}
 	
 	/**

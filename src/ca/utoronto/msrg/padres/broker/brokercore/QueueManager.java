@@ -35,7 +35,8 @@ import ca.utoronto.msrg.padres.common.message.PublicationMessage;
 import ca.utoronto.msrg.padres.common.message.SubscriptionMessage;
 
 /**
- * The QueueManager handles the collection of MessageQueues for all destinations in the broker.
+ * The QueueManager handles the collection of MessageQueues for all destinations
+ * in the broker.
  * 
  * @author eli
  */
@@ -46,7 +47,7 @@ public class QueueManager implements MessageListenerInterface {
 	protected Map<MessageDestination, MessageQueue> queues;
 
 	protected SystemMonitor systemMonitor;
-	
+
 	private boolean recordPublication = false;
 
 	static Logger exceptionLogger = Logger.getLogger("Exception");
@@ -88,7 +89,7 @@ public class QueueManager implements MessageListenerInterface {
 			}
 		}
 	}
-	
+
 	public boolean isRecordPublication() {
 		return recordPublication;
 	}
@@ -113,9 +114,9 @@ public class QueueManager implements MessageListenerInterface {
 	}
 
 	/**
-	 * Enqueue a message in the queue for the given destination. If no queue exists for the exact
-	 * destination, components will be removed until either a queue is found or all components are
-	 * removed.
+	 * Enqueue a message in the queue for the given destination. If no queue
+	 * exists for the exact destination, components will be removed until either
+	 * a queue is found or all components are removed.
 	 * 
 	 * @param msg
 	 * @param destination
@@ -124,25 +125,31 @@ public class QueueManager implements MessageListenerInterface {
 		msg.setNextHopID(destination);
 		MessageQueue queue = getMsgQueue(destination);
 		if (queue == null) {
-			//System.out.println("QueueManager>>enQueue::destination "+destination.isBroker());
-			//System.out.println("QueueManager>>enQueue::destination "+destination.isInternalQueue());
+			// System.out.println("QueueManager>>enQueue::destination "+destination.isBroker());
+			// System.out.println("QueueManager>>enQueue::destination "+destination.isInternalQueue());
 			if (destination.isBroker()) {
-				System.out.println("QueueHandler>>enQueue>>BROKER DESTINATION:: "+destination);
+				System.out
+						.println("QueueHandler>>enQueue>>BROKER DESTINATION:: "
+								+ destination);
 				if (destination.equals(brokerCore.getBrokerDestination())) {
 					return;
 				} else {
 					// Handle invalid destination by creating a queue.
-					// Presumably, a handler will later be created for this queue.
+					// Presumably, a handler will later be created for this
+					// queue.
 					queue = createMessageQueue();
-					System.out.println("QueueHandler>>enQueue>>BROKER DESTINATION:: "+destination+"Queue:: "+queue);
+					System.out
+							.println("QueueHandler>>enQueue>>BROKER DESTINATION:: "
+									+ destination + "Queue:: " + queue);
 					registerQueue(destination, queue);
-					//queue.notifyAll();
+					// queue.notifyAll();
 				}
 			} else {
-				messagePathLogger.fatal("QueueManager: queue for " + destination
-						+ " not found. Msg is " + msg);
+				messagePathLogger.fatal("QueueManager: queue for "
+						+ destination + " not found. Msg is " + msg);
 				exceptionLogger.fatal("Here is an exception: ", new Exception(
-						"QueueManager: queue for " + destination + " not found. Msg is " + msg));
+						"QueueManager: queue for " + destination
+								+ " not found. Msg is " + msg));
 				return;
 			}
 		}
@@ -159,10 +166,11 @@ public class QueueManager implements MessageListenerInterface {
 
 		// messages that are not publication messages are not sent to clients
 		OverlayManager overlayManager = brokerCore.getOverlayManager();
-		if (overlayManager != null && overlayManager.getORT().isClient(destination)) {
+		if (overlayManager != null
+				&& overlayManager.getORT().isClient(destination)) {
 			if (!(msg instanceof PublicationMessage)) {
-				messagePathLogger.warn("The incoming message for client " + msg.getNextHopID()
-						+ " is not a publication.");
+				messagePathLogger.warn("The incoming message for client "
+						+ msg.getNextHopID() + " is not a publication.");
 				exceptionLogger.warn("Here is an exception : ", (new Exception(
 						"The incoming message for client " + msg.getNextHopID()
 								+ " is not a publication.")));
@@ -170,7 +178,8 @@ public class QueueManager implements MessageListenerInterface {
 				return;
 			}
 		}
-		// place the message into the designated queue so that the relevant queue handler can
+		// place the message into the designated queue so that the relevant
+		// queue handler can
 		// process it in due time
 		queue.add(msg);
 	}
@@ -190,60 +199,75 @@ public class QueueManager implements MessageListenerInterface {
 	}
 
 	/**
-	 * Enqueue a message in the queue for its nextHopID. If no queue exists for the exact
-	 * destination, components will be removed until either a queue is found or all components are
-	 * removed.
+	 * Enqueue a message in the queue for its nextHopID. If no queue exists for
+	 * the exact destination, components will be removed until either a queue is
+	 * found or all components are removed.
 	 * 
 	 * @param msg
 	 */
 	public void enQueue(Message msg) {
-		System.out.println("QueueManager>>enQueue:: "+msg+"nexthopID:: "+msg.getNextHopID());
+		System.out.println("QueueManager>>enQueue:: " + msg + "nexthopID:: "
+				+ msg.getNextHopID());
 		enQueue(msg, msg.getNextHopID());
 	}
 
 	@Override
 	public void notifyMessage(Message msg, HostType sourceType) {
 		boolean dropped = false;
-		System.out.println("QueueManager >> notifyMessage >> HostType : " + sourceType);
-		System.out.println("QueueManager >> notifyMessage >> Message Type : " + msg.getType());
-		System.out.println("QueueManager >> notifyMessage >> isRecordPublication : " + isRecordPublication());
-		
-		if(sourceType == HostType.SERVER && msg.getType() == MessageType.SUBSCRIPTION)
-		{
-			System.out.println("QueueHandler>>RECIEVED SUBSCRIPTION: "+((SubscriptionMessage) msg).getSubscription().getClassVal());
+		System.out.println("QueueManager >> notifyMessage >> HostType : "
+				+ sourceType);
+		System.out.println("QueueManager >> notifyMessage >> Message Type : "
+				+ msg.getType());
+		System.out
+				.println("QueueManager >> notifyMessage >> isRecordPublication : "
+						+ isRecordPublication());
+
+		if (sourceType == HostType.SERVER
+				&& msg.getType() == MessageType.SUBSCRIPTION) {
+			System.out.println("QueueHandler>>RECIEVED SUBSCRIPTION: "
+					+ ((SubscriptionMessage) msg).getSubscription()
+							.getClassVal());
 		}
 		if (sourceType == HostType.SERVER) {
-			// The broker should not receive advertisement again, which is sent by this broker
+			// The broker should not receive advertisement again, which is sent
+			// by this broker
 			// before. To avoid the advertisement loop in the cyclic network
 			dropped = (msg.getType() == MessageType.ADVERTISEMENT)
-					&& msg.getMessageID().startsWith(brokerCore.getBrokerDestination() + "-M");
+					&& msg.getMessageID().startsWith(
+							brokerCore.getBrokerDestination() + "-M");
 		} else {
 			msg.setMessageID(brokerCore.getNewMessageID());
 			if (msg.getType() == MessageType.SUBSCRIPTION) {
-				System.out.println("================ SUBSCRIPTION MESSAGE RECEIVED =====================");
+				System.out
+						.println("================ SUBSCRIPTION MESSAGE RECEIVED =====================");
 				SubscriptionMessage subMsg = (SubscriptionMessage) msg;
 				// TODO: fix this hack for historic queries
-				Map<String, Predicate> predMap = subMsg.getSubscription().getPredicateMap();
+				Map<String, Predicate> predMap = subMsg.getSubscription()
+						.getPredicateMap();
 				if (predMap.get("_start_time") != null) {
 					SimpleDateFormat timeFormat = new SimpleDateFormat(
 							"EEE MMM dd HH:mm:ss zzz yyyy");
 					try {
-						Date startTime = timeFormat.parse((String) (predMap.get("_start_time")).getValue());
+						Date startTime = timeFormat.parse((String) (predMap
+								.get("_start_time")).getValue());
 						predMap.remove("_start_time");
 						subMsg.setStartTime(startTime);
 					} catch (ParseException e) {
-						exceptionLogger.error("Fail to convert Date format : " + e);
+						exceptionLogger.error("Fail to convert Date format : "
+								+ e);
 					}
 				}
 				if (predMap.get("_end_time") != null) {
 					SimpleDateFormat timeFormat = new SimpleDateFormat(
 							"EEE MMM dd HH:mm:ss zzz yyyy");
 					try {
-						Date endTime = timeFormat.parse((String) (predMap.get("_end_time")).getValue());
+						Date endTime = timeFormat.parse((String) (predMap
+								.get("_end_time")).getValue());
 						predMap.remove("_end_time");
 						subMsg.setEndTime(endTime);
 					} catch (ParseException e) {
-						exceptionLogger.error("Fail to convert Date format : " + e);
+						exceptionLogger.error("Fail to convert Date format : "
+								+ e);
 					}
 				}
 			}
@@ -251,35 +275,48 @@ public class QueueManager implements MessageListenerInterface {
 		if (!dropped) {
 			enQueue(msg, MessageDestination.INPUTQUEUE);
 		}
-		System.out.println("QueueManager >> isRecordPublication : " + isRecordPublication());
-		if(msg.getType().equals(MessageType.PUBLICATION) && isRecordPublication())
-		{
-			System.out.println("QueueManager >> notifyMessage >> ((PublicationMessage) msg class : " + ((PublicationMessage) msg).getPublication().getClassVal());
+		System.out.println("QueueManager >> isRecordPublication : "
+				+ isRecordPublication());
+		if (msg.getType().equals(MessageType.PUBLICATION)
+				&& isRecordPublication()) {
+			System.out
+					.println("QueueManager >> notifyMessage >> ((PublicationMessage) msg class : "
+							+ ((PublicationMessage) msg).getPublication()
+									.getClassVal());
 			brokerCore.notifyBroker((PublicationMessage) msg);
 		}
-		if(msg.getType().equals(MessageType.PUBLICATION) && (((PublicationMessage) msg).getPublication().getClassVal()).contains("CSStobeMigrated") && this.brokerCore.isLoadAcceptingBroker())
-		{
-			System.out.println("QueueManager >> notifyMessage >> ((PublicationMessage) msg class : " + ((PublicationMessage) msg).getPublication().getClassVal());
+		if (msg.getType().equals(MessageType.PUBLICATION)
+				&& (((PublicationMessage) msg).getPublication().getClassVal())
+						.contains("CSStobeMigrated")
+				&& this.brokerCore.isLoadAcceptingBroker()) {
+			System.out
+					.println("QueueManager >> notifyMessage >> ((CSStobeMigrated PublicationMessage) msg class : "
+							+ ((PublicationMessage) msg).getPublication()
+									.getClassVal());
 			brokerCore.subscribeCSStoMigrate((PublicationMessage) msg);
 		}
-		if(msg.getType().equals(MessageType.SUBSCRIPTION))
-		{
-			System.out.println("((SubscriptionMessage) msg class : " + ((SubscriptionMessage) msg).getSubscription().getClassVal());
-			String CSScompare = "CSStobeMigrated" + this.brokerCore.getBrokerURI().replace(".", "");
-			System.out.println("((((((((((((((((((((((((((((((((((((((((((((((((((((((((CSScompare"+CSScompare);
+		if (msg.getType().equals(MessageType.SUBSCRIPTION)) {
+			System.out.println("((SubscriptionMessage) msg class : "
+					+ ((SubscriptionMessage) msg).getSubscription()
+							.getClassVal());
+			String CSScompare = "CSStobeMigrated"
+					+ this.brokerCore.getBrokerURI().replace(".", "");
+			//System.out.println("((((((((((((((((((((((((((((((((((((((((((((((((((((((((CSScompare"+ CSScompare);
 			System.out.println("Subscriptions:::::::::: "+ ((SubscriptionMessage) msg).getSubscription());
 			String AcepterURI = null;
 			String ExcludeURI = null;
-			if(((SubscriptionMessage) msg).getSubscription().getClassVal().equals(CSScompare))
-			{
-			AcepterURI = (((SubscriptionMessage) msg).getSubscription().getPredicateMap().toString()).substring(13);
-			ExcludeURI = ", class=eq CSStobeMigrated"+this.brokerCore.getBrokerURI()+"}";
-			String newBrokerURIArr[] = AcepterURI.split(",");
-            System.out.println("PREDICATE::: "+newBrokerURIArr[0]);
-			brokerCore.cssBitVectorCalculation(newBrokerURIArr[0]);
+			if (((SubscriptionMessage) msg).getSubscription().getClassVal()
+					.equals(CSScompare)) {
+				AcepterURI = (((SubscriptionMessage) msg).getSubscription()
+						.getPredicateMap().toString()).substring(13);
+				ExcludeURI = ", class=eq CSStobeMigrated"
+						+ this.brokerCore.getBrokerURI() + "}";
+				String newBrokerURIArr[] = AcepterURI.split(",");
+				System.out.println("PREDICATE::: " + newBrokerURIArr[0]);
+				brokerCore.cssBitVectorCalculation(newBrokerURIArr[0]);
 			}
 		}
-		
+
 	}
 
 	public void clear() {
