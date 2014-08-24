@@ -783,9 +783,16 @@ public class BrokerCore {
 				String tempSubs = "[class,eq," + tempClassToSubscribe + "]";
 				System.out.println("<<<<<<<<<<<<<<<<<<<<<<<   Sending subscriptions as="+ tempSubs);
 				try {
+					Subscription sub;
 					
-					SubscriptionMessage subMsgObj = new SubscriptionMessage(tempSubs);
-					this.routeMessage(subMsgObj);
+					sub = MessageFactory.createSubscriptionFromString(tempSubs);
+					SubscriptionMessage subMsg = new SubscriptionMessage(sub, this.getNewMessageID(),
+							MessageDestination.INPUTQUEUE);
+					
+					this.routeMessage(subMsg, MessageDestination.INPUTQUEUE);
+					//SubscriptionMessage subMsgObj = new SubscriptionMessage(tempSubs);
+					//this.
+					//this.routeMessage(subMsgObj);
 					
 				} catch (ParseException e) {
 					// TODO Auto-generated catch block
@@ -871,52 +878,11 @@ public class BrokerCore {
 	public SubscriptionMessage subscribe(SubscriptionMessage subMsg,
 			String brokerURI) {
 
-		try {
-
-			/*
-			 * BrokerState brokerState = getBrokerState(brokerURI); if
-			 * (brokerState == null) { throw new
-			 * ClientException("Not connected to broker " + brokerURI); }
-			 * MessageDestination clientDest =
-			 * MessageDestination.formatClientDestination(clientID,
-			 * brokerState.getBrokerAddress().getNodeURI()); SubscriptionMessage
-			 * subMsg = new SubscriptionMessage(sub,
-			 * getNextMessageID(brokerState.getBrokerAddress().getNodeURI()),
-			 * brokerURI);
-			 */
-			// TODO: fix this hack for historic queries
-			/*
-			 * Map<String, Predicate> predMap =
-			 * subMsg.getSubscription().getPredicateMap(); if
-			 * (predMap.get("_start_time") != null) { SimpleDateFormat
-			 * timeFormat = new
-			 * SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy"); try { Date
-			 * startTime = timeFormat.parse((String)
-			 * (predMap.get("_start_time")).getValue());
-			 * predMap.remove("_start_time"); subMsg.setStartTime(startTime); }
-			 * catch (java.text.ParseException e) {
-			 * exceptionLogger.error("Fail to convert Date format : " + e); } }
-			 * if (predMap.get("_end_time") != null) { SimpleDateFormat
-			 * timeFormat = new
-			 * SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy"); try { Date
-			 * endTime = timeFormat.parse((String)
-			 * (predMap.get("_end_time")).getValue());
-			 * predMap.remove("_end_time"); subMsg.setEndTime(endTime); } catch
-			 * (java.text.ParseException e) {
-			 * exceptionLogger.error("Fail to convert Date format : " + e); } }
-			 */
-
-			// brokerStates.put(brokerAddress, new BrokerState(brokerAddress));
-			// BrokerState brokerState = getBrokerState(brokerURI);
-			// System.out.println("############ Brokerstate for uri="+brokerURI+" is="+brokerState);
+		try {			
 			MessageSender msgSender = commSystem.getMessageSender(brokerURI);
 			msgSender.connect();
 			System.out.println("********* Message sender=" + msgSender.getID());
 			String msgID = msgSender.send(subMsg, HostType.SERVER);
-			// subMsg.setMessageID(msgID);
-			// if (clientConfig.detailState)
-			// brokerState.addSubMsg(subMsg);
-
 		} catch (CommunicationException e) {
 			e.printStackTrace();
 		}
