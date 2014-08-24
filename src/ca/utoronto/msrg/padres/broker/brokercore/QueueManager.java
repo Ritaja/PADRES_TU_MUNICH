@@ -15,9 +15,13 @@ package ca.utoronto.msrg.padres.broker.brokercore;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 
@@ -32,7 +36,10 @@ import ca.utoronto.msrg.padres.common.message.MessageDestination;
 import ca.utoronto.msrg.padres.common.message.MessageType;
 import ca.utoronto.msrg.padres.common.message.Predicate;
 import ca.utoronto.msrg.padres.common.message.PublicationMessage;
+import ca.utoronto.msrg.padres.common.message.Subscription;
 import ca.utoronto.msrg.padres.common.message.SubscriptionMessage;
+import ca.utoronto.msrg.padres.common.message.Unsubscription;
+import ca.utoronto.msrg.padres.common.message.parser.MessageFactory;
 
 /**
  * The QueueManager handles the collection of MessageQueues for all destinations
@@ -218,9 +225,9 @@ public class QueueManager implements MessageListenerInterface {
 				+ sourceType);
 		System.out.println("QueueManager >> notifyMessage >> Message Type : "
 				+ msg.getType());
-		System.out.println("QueueManager >> notifyMessage >> isRecordPublication : "
+		System.out
+				.println("QueueManager >> notifyMessage >> isRecordPublication : "
 						+ isRecordPublication());
-		
 
 		if (sourceType == HostType.SERVER
 				&& msg.getType() == MessageType.SUBSCRIPTION) {
@@ -238,8 +245,11 @@ public class QueueManager implements MessageListenerInterface {
 		} else {
 			msg.setMessageID(brokerCore.getNewMessageID());
 			if (msg.getType() == MessageType.SUBSCRIPTION) {
-				System.out.println("================ SUBSCRIPTION MESSAGE RECEIVED =====================");
-				System.out.println("<<<<<<<< QueueManager --- notifyMessage ----- Subscription||"+ msg.toString());
+				System.out
+						.println("================ SUBSCRIPTION MESSAGE RECEIVED =====================");
+				System.out
+						.println("<<<<<<<< QueueManager --- notifyMessage ----- Subscription||"
+								+ msg.toString());
 				SubscriptionMessage subMsg = (SubscriptionMessage) msg;
 				// TODO: fix this hack for historic queries
 				Map<String, Predicate> predMap = subMsg.getSubscription()
@@ -275,55 +285,146 @@ public class QueueManager implements MessageListenerInterface {
 		if (!dropped) {
 			enQueue(msg, MessageDestination.INPUTQUEUE);
 		}
-		
-		System.out.println("QueueManager >> isRecordPublication : "	+ isRecordPublication());
-		
-		if (msg.getType().equals(MessageType.PUBLICATION))
-		{
-			System.out.println("<<<<<<<< QueueManager --- notifyMessage ----- Publication||"+ msg.toString());
-			
-		}
-		
-		if (msg.getType().equals(MessageType.PUBLICATION) && isRecordPublication()) {
+
+		System.out.println("QueueManager >> isRecordPublication : "
+				+ isRecordPublication());
+
+		if (msg.getType().equals(MessageType.PUBLICATION)
+				&& isRecordPublication()) {
 			System.out
 					.println("QueueManager >> notifyMessage >> ((PublicationMessage) msg class : "
 							+ ((PublicationMessage) msg).getPublication()
 									.getClassVal());
 			brokerCore.notifyBroker((PublicationMessage) msg);
 		}
-		
-		
-		if (msg.getType().equals(MessageType.PUBLICATION)
-				&& (((PublicationMessage) msg).getPublication().getClassVal())
-						.contains("CSStobeMigrated")
-				&& this.brokerCore.isLoadAcceptingBroker()) {
+
+		if (msg.getType().equals(MessageType.PUBLICATION)) {
+
+			String msgStr = msg.toString();
 			System.out
-					.println("QueueManager >> notifyMessage >> ((CSStobeMigrated PublicationMessage) msg class : "
-							+ ((PublicationMessage) msg).getPublication()
-									.getClassVal());
-			brokerCore.subscribeCSStoMigrate((PublicationMessage) msg);
+					.println("<<<<<<<< QueueManager --- notifyMessage ----- Publication||"
+							+ msgStr);
+
+			if ((((PublicationMessage) msg).getPublication().getClassVal())
+					.contains("CSStobeMigrated")
+					&& this.brokerCore.isLoadAcceptingBroker()) {
+				System.out
+						.println("QueueManager >> notifyMessage >> ((CSStobeMigrated PublicationMessage) msg class : "
+								+ ((PublicationMessage) msg).getPublication()
+										.getClassVal());
+				brokerCore.subscribeCSStoMigrate((PublicationMessage) msg);
+			}
 		}
-		
 		if (msg.getType().equals(MessageType.SUBSCRIPTION)) {
-			System.out.println("Queue manager---notifyMessage----Subscription received="+msg.toString());
-			
+			System.out
+					.println("Queue manager---notifyMessage----Subscription received="
+							+ msg.toString());
+
 			System.out.println("((SubscriptionMessage) msg class : "
-					+ ((SubscriptionMessage) msg).getSubscription().getClassVal());
+					+ ((SubscriptionMessage) msg).getSubscription()
+							.getClassVal());
 			String CSScompare = "CSStobeMigrated"
 					+ this.brokerCore.getBrokerURI().replace(".", "");
-			//System.out.println("((((((((((((((((((((((((((((((((((((((((((((((((((((((((CSScompare"+ CSScompare);
-			System.out.println("Subscriptions:::::::::: "+ ((SubscriptionMessage) msg).getSubscription());
-			String AcepterURI = null;
-			String ExcludeURI = null;
+
+			System.out.println("Subscriptions:::::::::: "
+					+ ((SubscriptionMessage) msg).getSubscription());
+			String accepterURI = null;
+
 			if (((SubscriptionMessage) msg).getSubscription().getClassVal()
 					.equals(CSScompare)) {
-				AcepterURI = (((SubscriptionMessage) msg).getSubscription()
+				accepterURI = (((SubscriptionMessage) msg).getSubscription()
 						.getPredicateMap().toString()).substring(13);
-				ExcludeURI = ", class=eq CSStobeMigrated"
-						+ this.brokerCore.getBrokerURI() + "}";
-				String newBrokerURIArr[] = AcepterURI.split(",");
-				System.out.println("PREDICATE::: " + newBrokerURIArr[0]);
-				brokerCore.cssBitVectorCalculation(newBrokerURIArr[0]);
+
+				String newBrokerURIArr[] = accepterURI.split(","); 
+				System.out
+						.println("<<<<<<<<<< Value for Accepter predicate::: "
+								+ newBrokerURIArr[0]);
+				if ("LOADBALANCE_COMPLETE".equalsIgnoreCase(newBrokerURIArr[0])) {
+					/*
+					 * This is the case when CSStobeMigrated subscription
+					 * appears for the 2nd time when the load balance process is
+					 * over. Here unsubscription happens.
+					 */
+
+					// Send unsubscribe message for the CSS classes which were
+					// migrated.
+
+					System.out.println("QueueManager >> notifyMessage >>> LOADBALANCE_COMPLETE");
+
+					Map<String, SubscriptionMessage> subs = this.brokerCore
+							.getSubscriptions();
+					System.out
+							.println("QueueManager >> notifyMessage >> subscriptions retrieved :"
+									+ subs);
+
+					List<String> subscriptionList = new ArrayList<String>();
+
+					Iterator<Map.Entry<String, SubscriptionMessage>> it = subs
+							.entrySet().iterator();
+					while (it.hasNext()) {
+
+						Entry<String, SubscriptionMessage> thisEntry = it
+								.next();
+						String brokerInfoMsg = thisEntry.getValue()
+								.getSubscription().toString();
+						String brokerInfoMsgClass = thisEntry.getValue()
+								.getSubscription().getClassVal();
+
+						if (brokerInfoMsgClass
+								.equalsIgnoreCase("HEARTBEAT_MANAGER")
+								|| brokerInfoMsgClass
+										.equalsIgnoreCase("NETWORK_DISCOVERY")
+								|| brokerInfoMsgClass
+										.equalsIgnoreCase("BROKER_INFO")
+								|| brokerInfoMsgClass
+										.equalsIgnoreCase("GLOBAL_FD")
+								|| brokerInfoMsgClass
+										.equalsIgnoreCase("BROKER_CONTROL")
+								|| brokerInfoMsgClass
+										.equalsIgnoreCase("CSStobeMigrated"
+												+ this.brokerCore
+														.getBrokerURI()
+														.replace(".", ""))
+								|| brokerInfoMsgClass
+										.equalsIgnoreCase("BROKER_MONITOR")) {
+
+							System.out
+									.println("QueueManager >> Control Messages skipped"
+											+ brokerInfoMsgClass);
+
+						} else {
+							// Unsubscription process starts
+							
+							String classesToUnSub = this.brokerCore
+									.getClassesTransferred();
+							String classestoUnSubArr[] = classesToUnSub
+									.split(" ");
+							for (String subClass : classestoUnSubArr) {
+								if (brokerInfoMsg.contains(subClass)) {
+									System.out.println("QueueManager <<<< notifyMessage <<<< Unsubscription is done for message="+brokerInfoMsg);
+									// Unsubscription unsub =
+									// MessageFactory.createSubscriptionFromString(brokerInfoMsg);
+									// Unsubscription Process has to happen	
+								}
+							}
+
+							subscriptionList.add(thisEntry.getValue()
+									.getSubscription().toString());
+						}
+					}
+					System.out
+							.println("brokerCore >> notifyMessage >> subscriptionArray : "
+									+ subscriptionList);
+					this.brokerCore.setStatus("OK");
+
+				} else {
+					// This is the case when CSStobeMigrated subscription
+					// appears for the 1st time.
+					System.out.println(" <<<<<<<<<<<<<<<<<<<<<<< QueueManager --- notifyMessage --- Load Balancing starts with="+ newBrokerURIArr[0]);
+					this.brokerCore.setStatus("NA");
+					brokerCore.cssBitVectorCalculation(newBrokerURIArr[0]);
+				}
+
 			}
 		}
 

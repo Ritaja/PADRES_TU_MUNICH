@@ -909,8 +909,11 @@ public class SystemMonitor extends Thread {
 		}
 		int numberOfNeighbours = ((Set) brokerInfo.get(NEIGBOURS)).size();
 		int numberOfClients = ((Set) brokerInfo.get(CLIENTS)).size();
-		String status = "OK";	// For indicating broker's status for load balancing.. 
-	//	Map <String, SubscriptionMessage> cSS_Subscribed = brokerCore.getSubscriptions();
+		
+		String status = this.brokerCore.getStatus();	// For indicating broker's status for load balancing.. 
+	
+		
+		//	Map <String, SubscriptionMessage> cSS_Subscribed = brokerCore.getSubscriptions();
 		
 		String neighborsStr = "";
 	

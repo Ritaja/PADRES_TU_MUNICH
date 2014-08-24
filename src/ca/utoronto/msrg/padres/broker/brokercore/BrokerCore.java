@@ -134,15 +134,39 @@ public class BrokerCore {
 	private String uriForOverLoadedBroker = "";
 
 	private boolean isLoadAcceptingBroker = false;
+	
+	private String classesTransferred = "";	
+	
+	List<CssInfo> infoVector = new ArrayList<CssInfo>();
+
+	protected Map<NodeAddress, BrokerState> brokerStates = new HashMap<NodeAddress, BrokerState>();
+
+	private String status = "OK";
+
+	public String getStatus() {
+		return status;
+	}
+
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
 
 	public boolean isLoadAcceptingBroker() {
 		return isLoadAcceptingBroker;
 	}
 
-	List<CssInfo> infoVector = new ArrayList<CssInfo>();
+	
+	public String getClassesTransferred() {
+		return classesTransferred;
+	}
 
-	protected Map<NodeAddress, BrokerState> brokerStates = new HashMap<NodeAddress, BrokerState>();
-
+	public void setClassesTransferred(String classesTransferred) {
+		this.classesTransferred = classesTransferred;
+	}
+	
+	
 	/**
 	 * Constructor for one argument. To take advantage of command line
 	 * arguments, use the 'BrokerCore(String[] args)' constructor
@@ -212,13 +236,13 @@ public class BrokerCore {
 	}
 
 	public void cssBitVectorCalculation(String newURI) {
+		System.out.println("<<<<<<<<<<<<<<<<< BrokerCore --- cssBitVectorCalculation --- ");
 		buildCSSVector();
 		List<CssInfo> finalList = new ArrayList<CssInfo>();
 
-		// Do something with this sleep.... NOT GOOD
+		// TODO: Do something with this sleep.... NOT GOOD
 		try {
-			System.out
-					.println("BrokerCore going to sleep................*******************");
+			System.out.println("BrokerCore going to sleep................*******************");
 			Thread.sleep(10000);
 			System.out
 					.println("BrokerCore waking up................*******************");
@@ -226,8 +250,7 @@ public class BrokerCore {
 			e.printStackTrace();
 		}
 		if (this.infoVector == null) {
-			System.out
-					.println("BrokerCore >> cssBitVectorCalculation >> infovector NULL");
+			System.out.println("BrokerCore >> cssBitVectorCalculation >> infovector NULL");
 		}
 		Collections.sort(infoVector, new CssInfoComparator());
 		int sum = 0;
@@ -249,7 +272,9 @@ public class BrokerCore {
 			Csstemp += info.getCssClass() + " ";
 			System.out.println(info.getCssClass() + "\n");
 		}
-
+		
+		setClassesTransferred(Csstemp);
+		
 		String CSStobeMigrated = "[class,'CSStobeMigrated"
 				+ this.getBrokerURI().replace(".", "") + "'],"
 				+ "[Accepter,'Dummy']," + "[CSSList,'" + Csstemp + "']";
@@ -262,8 +287,7 @@ public class BrokerCore {
 	 */
 	public void publishCSStobeMigrated(String CSStobeMigrated, String newURI) {
 		try {
-			Publication pub = MessageFactory
-					.createPublicationFromString(CSStobeMigrated);
+			Publication pub = MessageFactory.createPublicationFromString(CSStobeMigrated);
 			pub.setPayload(pub);
 			// Make the publication message
 			PublicationMessage pubmsg = new PublicationMessage(pub,
@@ -286,18 +310,15 @@ public class BrokerCore {
 	 * This function builds the CSSVector and starts Publication Sensor thread
 	 */
 	public List<CssInfo> buildCSSVector() {
-		System.out.println("BrokerCore >> buildCSSVector");
+		System.out.println("BrokerCore >>>>>>>>>>>> buildCSSVector");
 
 		Map<String, SubscriptionMessage> subs = this.getSubscriptions();
-		System.out
-				.println("BrokerCore >> buildCSSVector >> subscriptions retrieved :"
-						+ subs);
-		// String[] subscriptionArray = new String[subs.size()];
+		System.out.println("BrokerCore >> buildCSSVector >> subscriptions retrieved :"+ subs);
+		
 		List<String> subscriptionArray = new ArrayList<String>();
-		// CssInfo[] infoVector = new CssInfo[subscriptionArray.size()];
+		
 
-		Iterator<Map.Entry<String, SubscriptionMessage>> it = subs.entrySet()
-				.iterator();
+		Iterator<Map.Entry<String, SubscriptionMessage>> it = subs.entrySet().iterator();
 		while (it.hasNext()) {
 
 			Entry<String, SubscriptionMessage> thisEntry = it.next();
@@ -311,8 +332,7 @@ public class BrokerCore {
 					|| brokerInfoMsg.equalsIgnoreCase("CSStobeMigrated"
 							+ this.getBrokerURI().replace(".", ""))
 					|| brokerInfoMsg.equalsIgnoreCase("BROKER_MONITOR")) {
-				System.out
-						.println("brokerCore >> BrokerINFO message skipped and not added to infovector"
+				System.out.println("brokerCore >> BrokerINFO message skipped and not added to infovector"
 								+ brokerInfoMsg);
 			} else {
 				subscriptionArray.add(thisEntry.getValue().getSubscription()
@@ -754,9 +774,7 @@ public class BrokerCore {
 	 *            msg containing CSStobeMigrated
 	 * @return null
 	 */
-	protected void subscribeCSStoMigrate(PublicationMessage msg) {
-
-		
+	protected void subscribeCSStoMigrate(PublicationMessage msg) {		
 		
 		String msgStr = msg.toString();
 		
@@ -783,17 +801,12 @@ public class BrokerCore {
 				String tempSubs = "[class,eq," + tempClassToSubscribe + "]";
 				System.out.println("<<<<<<<<<<<<<<<<<<<<<<<   Sending subscriptions as="+ tempSubs);
 				try {
-					Subscription sub;
-					
-					sub = MessageFactory.createSubscriptionFromString(tempSubs);
+					Subscription sub = MessageFactory.createSubscriptionFromString(tempSubs);
 					SubscriptionMessage subMsg = new SubscriptionMessage(sub, this.getNewMessageID(),
 							MessageDestination.INPUTQUEUE);
 					
 					this.routeMessage(subMsg, MessageDestination.INPUTQUEUE);
-					//SubscriptionMessage subMsgObj = new SubscriptionMessage(tempSubs);
-					//this.
-					//this.routeMessage(subMsgObj);
-					
+
 				} catch (ParseException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -801,6 +814,25 @@ public class BrokerCore {
 			}
 		}
 		
+		// Sending subscription to denote the process in completed
+		
+		String subStr = "[class,eq, CSStobeMigrated"+ uriForOverLoadedBroker.replace(".", "") + "],"
+				+ "[Accepter,eq, 'LOADBALANCE_COMPLETE']";				
+		try {
+			Subscription sub = MessageFactory.createSubscriptionFromString(subStr);
+			SubscriptionMessage subMsg = new SubscriptionMessage(sub, this.getNewMessageID(),
+					MessageDestination.INPUTQUEUE);
+			
+			this.routeMessage(subMsg, MessageDestination.INPUTQUEUE);
+				
+			
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+		removingNewBrokerStatus();
 		
 		
 	/*	String CSSlistArray[] = (msg.getPublication().toString()).split(",");
@@ -830,6 +862,15 @@ public class BrokerCore {
 				}
 			}
 		}*/
+	}
+	
+	
+	/**
+	 * @return Removing "new broker" status from the broker which started as a result of load balancing. Henceforth, it will behave as a normal behavior.
+	 */	
+	public void removingNewBrokerStatus()
+	{
+		this.isLoadAcceptingBroker = false;	
 	}
 
 	/**

@@ -115,10 +115,12 @@ public class MediatorImpl extends Client implements Runnable
 	 * @return
 	 */
 	public static List<String> getOverloadedBroker() {
-		/* check performance metrics and STATUS of every broker.
+		
+		/* Check performance metrics and STATUS of every broker.
 		Change STATUS to "NA" if broker id overloaded. 
 		Broker will only be considered overloaded if STATUS is "NA".
 		*/
+		
 		float threshold = 0.0f;
 		List<String> overloadedBroker = new ArrayList<String>();
 		try {
@@ -133,11 +135,21 @@ public class MediatorImpl extends Client implements Runnable
 				{				
 					System.out.println("Broker ID ="+entry.getKey());
 					System.out.println("Value of Ir ="+maxIR);
-					overloadedBroker.add(entry.getKey());
+					
 					HashMap <String, String> temp = brokerMap.get(entry.getKey());
 					System.out.println("Current broker to change the status to NA ="+temp);
-					temp.remove("STATUS");
-					temp.put("STATUS", "NA");
+					 
+					if ("OK".equals(temp.get("STATUS")))
+					{
+						overloadedBroker.add(entry.getKey());
+						//temp.remove("STATUS");
+						//temp.put("STATUS", "NA");
+					}
+					else
+					{
+						return overloadedBroker;
+					}
+					
 				}				
 			}
 				
