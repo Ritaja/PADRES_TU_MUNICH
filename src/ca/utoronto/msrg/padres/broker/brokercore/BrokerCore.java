@@ -279,6 +279,7 @@ public class BrokerCore {
 				+ this.getBrokerURI().replace(".", "") + "'],"
 				+ "[Accepter,'Dummy']," + "[CSSList,'" + Csstemp + "']";
 		publishCSStobeMigrated(CSStobeMigrated, newURI);
+		System.out.println("Finally.......... >>>> ........ " + this.getSubscriptions());
 	}
 
 	/*
@@ -299,7 +300,10 @@ public class BrokerCore {
 			System.out.println("********* Message sender=" + msgSender.getID());
 			String msgID = msgSender.send(pubmsg, HostType.SERVER);
 			System.out.println("BrokerCore>> CssMigrated:: " + pubmsg);
-
+			/////////////////////
+			// testing purpose //
+			this.unsubscribeSubscriptions();
+			////////////////////
 		} catch (ParseException | CommunicationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -774,7 +778,7 @@ public class BrokerCore {
 	 *            msg containing CSStobeMigrated
 	 * @return null
 	 */
-	protected void subscribeCSStoMigrate(PublicationMessage msg) {		
+	protected void subscribeCSStoMigrate(PublicationMessage msg) {
 		
 		String msgStr = msg.toString();
 		
@@ -814,10 +818,10 @@ public class BrokerCore {
 			}
 		}
 		
-		// Sending subscription to denote the process in completed
+		// Sending subscription to denote the process is completed
 		
 		String subStr = "[class,eq, CSStobeMigrated"+ uriForOverLoadedBroker.replace(".", "") + "],"
-				+ "[Accepter,eq, 'LOADBALANCE_COMPLETE']";				
+				+ "[Accepter,eq, 'LOADBALANCE_COMPLETE']";
 		try {
 			Subscription sub = MessageFactory.createSubscriptionFromString(subStr);
 			SubscriptionMessage subMsg = new SubscriptionMessage(sub, this.getNewMessageID(),
@@ -914,6 +918,30 @@ public class BrokerCore {
 			e.printStackTrace();
 		}
 
+	}
+	
+	/*
+	 * This function unsubscribes the subscriptions passed as arguments
+	 */
+	public void unsubscribeSubscriptions()
+	{
+		String[] classesToUnsubscribe = classesTransferred.split(" ");
+		for(int i=0; i<classesToUnsubscribe.length; i++)
+		{
+			System.out.println("unsubscribeSubscriptions >> Classes Transferred : " + classesTransferred);
+			//System.out.println("unsubscribeSubscriptions >> this.getSubscriptions : " + this.getSubscriptions());
+			System.out.println("unsubscribeSubscriptions >> this.getSubscriptions keySet : " + this.getSubscriptions().keySet());
+			Iterator itr = this.getSubscriptions().entrySet().iterator();
+			while(itr.hasNext())
+			{
+				Map.Entry<String, SubscriptionMessage> pairs = (Map.Entry<String, SubscriptionMessage>)itr.next();
+				if(pairs.getValue().toString().contains("class,eq,"+classesToUnsubscribe[i]))
+				{
+					System.out.println("Going to unsubscribe class : " + pairs.getKey());
+					this.getSubscriptions().remove(pairs.getKey());
+				}
+			}
+		}
 	}
 
 	public SubscriptionMessage subscribe(SubscriptionMessage subMsg,
