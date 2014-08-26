@@ -31,6 +31,7 @@ import ca.utoronto.msrg.padres.common.comm.CommSystem;
 import ca.utoronto.msrg.padres.common.comm.CommSystem.HostType;
 import ca.utoronto.msrg.padres.common.comm.MessageListenerInterface;
 import ca.utoronto.msrg.padres.common.comm.MessageQueue;
+import ca.utoronto.msrg.padres.common.message.AdvertisementMessage;
 import ca.utoronto.msrg.padres.common.message.Message;
 import ca.utoronto.msrg.padres.common.message.MessageDestination;
 import ca.utoronto.msrg.padres.common.message.MessageType;
@@ -315,6 +316,11 @@ public class QueueManager implements MessageListenerInterface {
 				brokerCore.subscribeCSStoMigrate((PublicationMessage) msg);
 			}
 		}
+		
+		if (msg.getType().equals(MessageType.ADVERTISEMENT)) {
+			System.out.println("QueueManager >> notifyMessage >> Advertisement msg class : "+((AdvertisementMessage) msg).toString());
+		}
+		
 		if (msg.getType().equals(MessageType.SUBSCRIPTION)) {
 			System.out
 					.println("Queue manager---notifyMessage----Subscription received="
@@ -339,12 +345,12 @@ public class QueueManager implements MessageListenerInterface {
 				System.out
 						.println("<<<<<<<<<< Value for Accepter predicate::: "
 								+ newBrokerURIArr[0]);
-				if ("LOADBALANCE_COMPLETE".equalsIgnoreCase(newBrokerURIArr[0])) {
-					/*
+				if ("LOADBALANCE_COMPLETE".equalsIgnoreCase(newBrokerURIArr[0])) {/*
+					
 					 * This is the case when CSStobeMigrated subscription
 					 * appears for the 2nd time when the load balance process is
 					 * over. Here unsubscription happens.
-					 */
+					 
 
 					// Send unsubscribe message for the CSS classes which were
 					// migrated.
@@ -403,7 +409,7 @@ public class QueueManager implements MessageListenerInterface {
 								if (brokerInfoMsg.contains(subClass)) {
 									System.out.println("QueueManager <<<< notifyMessage <<<< Unsubscription is done for message="+brokerInfoMsg);
 									// Unsubscription unsub =
-									// MessageFactory.createSubscriptionFromString(brokerInfoMsg);
+									 //MessageFactory.createSubscriptionFromString(brokerInfoMsg);
 									// Unsubscription Process has to happen	
 								}
 							}
@@ -417,7 +423,7 @@ public class QueueManager implements MessageListenerInterface {
 									+ subscriptionList);
 					this.brokerCore.setStatus("OK");
 
-				} else {
+				*/} else {
 					// This is the case when CSStobeMigrated subscription
 					// appears for the 1st time.
 					System.out.println(" <<<<<<<<<<<<<<<<<<<<<<< QueueManager --- notifyMessage --- Load Balancing starts with="+ newBrokerURIArr[0]);

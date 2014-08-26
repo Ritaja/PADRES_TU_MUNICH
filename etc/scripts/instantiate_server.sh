@@ -15,6 +15,8 @@ overloadBrkUri=$1
 uriLoadAcceptingBrk=$2
 neighbors=$3
 searchstr="localhost"
+username="topscale"
+keyFile=`echo $uriLoadAcceptingBrk | cut -d"." -f1`
 echo "Current directory=" 
 pwd
 PADRES_HOME="$(cd $(dirname "$0")/../.. && pwd)"
@@ -40,5 +42,5 @@ then
 else
 	# ssh to other server yet to be done
 	echo "Connecting to the new broker in a remote machine"
-	ssh $username@$hostname java -jar ../../ms3-server.jar $port INFO 
+	ssh -i ~/.ssh/$keyFile $username@$uriLoadAcceptingBrk bash $PADRES_HOME/etc/scripts/startnewbroker -uri $uriLoadAcceptingBrk -n $neighbors -ovl $overloadBrkUri loadbalance
 fi

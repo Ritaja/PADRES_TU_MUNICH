@@ -59,6 +59,7 @@ import ca.utoronto.msrg.padres.common.comm.QueueHandler;
 import ca.utoronto.msrg.padres.common.comm.CommSystem.HostType;
 import ca.utoronto.msrg.padres.common.comm.socket.SocketAddress;
 import ca.utoronto.msrg.padres.common.comm.socket.SocketMessageSender;
+import ca.utoronto.msrg.padres.common.message.Advertisement;
 import ca.utoronto.msrg.padres.common.message.AdvertisementMessage;
 import ca.utoronto.msrg.padres.common.message.Message;
 import ca.utoronto.msrg.padres.common.message.MessageDestination;
@@ -142,6 +143,18 @@ public class BrokerCore {
 	protected Map<NodeAddress, BrokerState> brokerStates = new HashMap<NodeAddress, BrokerState>();
 
 	private String status = "OK";
+	
+	private String accepterUrl = ""; 
+
+	public String getAccepterUrl() {
+		return accepterUrl;
+	}
+
+
+	public void setAccepterUrl(String accepterUrl) {
+		this.accepterUrl = accepterUrl;
+	}
+
 
 	public String getStatus() {
 		return status;
@@ -237,6 +250,7 @@ public class BrokerCore {
 
 	public void cssBitVectorCalculation(String newURI) {
 		System.out.println("<<<<<<<<<<<<<<<<< BrokerCore --- cssBitVectorCalculation --- ");
+		setAccepterUrl(newURI);
 		buildCSSVector();
 		List<CssInfo> finalList = new ArrayList<CssInfo>();
 
@@ -278,7 +292,26 @@ public class BrokerCore {
 		String CSStobeMigrated = "[class,'CSStobeMigrated"
 				+ this.getBrokerURI().replace(".", "") + "'],"
 				+ "[Accepter,'Dummy']," + "[CSSList,'" + Csstemp + "']";
+		
+		//publishing the CSSlist which needs to be migrated
 		publishCSStobeMigrated(CSStobeMigrated, newURI);
+		
+		// Sending subscription for LOAD_BALANCE ACK
+		try {
+		
+		Subscription sub = MessageFactory.createSubscriptionFromString("[class,eq,CSStobeMigratedACK"+getAccepterUrl().replace(".", "") + "]");
+		
+		System.out.println("<<<<<<<<<<< BrokerCore ----- cssBitVectorCalculation ------- sub CSStobeMigratedACK="+sub.toString());
+		
+		SubscriptionMessage subMsg = new SubscriptionMessage(sub, this.getNewMessageID(),
+				MessageDestination.INPUTQUEUE);
+		
+		this.routeMessage(subMsg, MessageDestination.INPUTQUEUE);
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		System.out.println("Finally.......... >>>> ........ " + this.getSubscriptions());
 	}
 
@@ -302,7 +335,7 @@ public class BrokerCore {
 			System.out.println("BrokerCore>> CssMigrated:: " + pubmsg);
 			/////////////////////
 			// testing purpose //
-			this.unsubscribeSubscriptions();
+			//this.unsubscribeSubscriptions();
 			////////////////////
 		} catch (ParseException | CommunicationException e) {
 			// TODO Auto-generated catch block
@@ -818,16 +851,27 @@ public class BrokerCore {
 			}
 		}
 		
-		// Sending subscription to denote the process is completed
-		
-		String subStr = "[class,eq, CSStobeMigrated"+ uriForOverLoadedBroker.replace(".", "") + "],"
-				+ "[Accepter,eq, 'LOADBALANCE_COMPLETE']";
+		// Sending publication to denote the process is completed
 		try {
+			
+		Publication pubCSSAck = MessageFactory.createPublicationFromString("[class,eq,CSStobeMigratedACK"
+		+getBrokerID().replace(".", "") + "],[Message,'LOADBALANCE_COMPLETE']");
+		pubCSSAck.setPayload(pubCSSAck);
+		System.out.println("<<<<<<<<<<< BrokerCore ----- subscribeCSStoMigrate ------- publication CSStobeMigratedACK="+pubCSSAck.toString());
+		
+		PublicationMessage pubmsg = new PublicationMessage(pubCSSAck,
+				this.getNewMessageID(), this.getBrokerDestination());
+		this.routeMessage(pubmsg, MessageDestination.INPUTQUEUE);
+		
+		
+		/*String subStr = "[class,eq, CSStobeMigrated"+ uriForOverLoadedBroker.replace(".", "") + "],"
+				+ "[Accepter,eq, 'LOADBALANCE_COMPLETE']";
+		
 			Subscription sub = MessageFactory.createSubscriptionFromString(subStr);
 			SubscriptionMessage subMsg = new SubscriptionMessage(sub, this.getNewMessageID(),
 					MessageDestination.INPUTQUEUE);
 			
-			this.routeMessage(subMsg, MessageDestination.INPUTQUEUE);
+			this.routeMessage(subMsg, MessageDestination.INPUTQUEUE);*/
 				
 			
 		} catch (ParseException e) {
@@ -912,7 +956,7 @@ public class BrokerCore {
 			 * //this.routeMessage(msg, MessageDestination.CONTROLLER);
 			 * this.routeMessage(msg);
 			 */
-			subscribe(msg, uriForOverLoadedBroker);
+			initialSubscribeAndAdverstisementNewBroker(msg, uriForOverLoadedBroker);
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -944,7 +988,7 @@ public class BrokerCore {
 		}
 	}
 
-	public SubscriptionMessage subscribe(SubscriptionMessage subMsg,
+	public SubscriptionMessage initialSubscribeAndAdverstisementNewBroker(SubscriptionMessage subMsg,
 			String brokerURI) {
 
 		try {			
@@ -952,7 +996,20 @@ public class BrokerCore {
 			msgSender.connect();
 			System.out.println("********* Message sender=" + msgSender.getID());
 			String msgID = msgSender.send(subMsg, HostType.SERVER);
+			
+			// Sending Advertisement for acknoledgement of load_balance complete
+			String advAckLBComplete = "[class,eq,CSStobeMigratedACK"+getBrokerID().replace(".", "") + "],[Message,isPresent,'Dummy']";
+			Advertisement adv = MessageFactory.createAdvertisementFromString(advAckLBComplete);
+			AdvertisementMessage advMsg = new AdvertisementMessage(adv, this.getNewMessageID(),
+					this.getBrokerDestination());
+			System.out.println("<<<<<<<<<<< BrokerCore ----- initialSubscribeAndAdverstisementNewBroker ------- adv CSStobeMigratedACK="+advMsg.toString());
+			this.routeMessage(advMsg, MessageDestination.INPUTQUEUE);
+
+			
 		} catch (CommunicationException e) {
+			e.printStackTrace();
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return subMsg;
