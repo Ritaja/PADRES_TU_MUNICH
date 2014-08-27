@@ -13,21 +13,16 @@ fi
 # echo arguments
 overloadBrkUri=$1
 uriLoadAcceptingBrk=$2
-echo "LoadAccepting Broker URI=" $uriLoadAcceptingBrk
-uriLoadAcceptingPort=`echo $uriLoadAcceptingBrk | cut -d"/" -f3 | cut -d":" -f2`
-uriLoadAcceptingIP=`echo $uriLoadAcceptingBrk | cut -d"/" -f3 | cut -d":" -f1`
-echo "LoadAccepting Broker IP" $uriLoadAcceptingIP
-echo "LoadAccepting Broker port" $uriLoadAcceptingPort
 neighbors=$3
 searchstr="localhost"
 username="topscale"
-keyFile=`echo $uriLoadAcceptingBrk | cut -d"/" -f3 | cut -d":" -f1 | cut -d"." -f1`
-echo "Key File =" $keyFile
-echo "Current directory=" `pwd`
+keyFile=`echo $uriLoadAcceptingBrk | cut -d"." -f1`
+echo "Current directory=" 
+pwd
 PADRES_HOME="$(cd $(dirname "$0")/../.. && pwd)"
 export PADRES_HOME
 echo "####PADRES_HOME=" $PADRES_HOME "   "
-padres_dir="PADRES_TU_MUNICH"
+ 
 typeOnConn=""
 echo "SSH client starts.............."
 echo " instantiate_server.sh >> Connecting to ...:" $uriLoadAcceptingBrk
@@ -47,5 +42,5 @@ then
 else
 	# ssh to other server yet to be done
 	echo "Connecting to the new broker in a remote machine"
-	ssh -i ~/.ssh/$keyFile $username@$uriLoadAcceptingIP bash "~/$padres_dir/etc/scripts/startnewbroker" -uri $uriLoadAcceptingBrk -n $neighbors -ovl $overloadBrkUri loadbalance &
+	ssh -i ~/.ssh/$keyFile $username@$uriLoadAcceptingBrk bash $PADRES_HOME/etc/scripts/startnewbroker -uri $uriLoadAcceptingBrk -n $neighbors -ovl $overloadBrkUri loadbalance
 fi
