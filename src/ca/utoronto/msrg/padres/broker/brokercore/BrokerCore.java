@@ -311,8 +311,7 @@ public class BrokerCore {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		System.out.println("Finally.......... >>>> ........ " + this.getSubscriptions());
+	
 	}
 
 	/*
@@ -854,8 +853,9 @@ public class BrokerCore {
 		// Sending publication to denote the process is completed
 		try {
 			
-		Publication pubCSSAck = MessageFactory.createPublicationFromString("[class,eq,CSStobeMigratedACK"
+		Publication pubCSSAck = MessageFactory.createPublicationFromString("[class,CSStobeMigratedACK"
 		+getBrokerID().replace(".", "") + "],[Message,'LOADBALANCE_COMPLETE']");
+      
 		pubCSSAck.setPayload(pubCSSAck);
 		System.out.println("<<<<<<<<<<< BrokerCore ----- subscribeCSStoMigrate ------- publication CSStobeMigratedACK="+pubCSSAck.toString());
 		
@@ -973,8 +973,8 @@ public class BrokerCore {
 		for(int i=0; i<classesToUnsubscribe.length; i++)
 		{
 			System.out.println("unsubscribeSubscriptions >> Classes Transferred : " + classesTransferred);
-			//System.out.println("unsubscribeSubscriptions >> this.getSubscriptions : " + this.getSubscriptions());
-			System.out.println("unsubscribeSubscriptions >> this.getSubscriptions keySet : " + this.getSubscriptions().keySet());
+			System.out.println("unsubscribeSubscriptions >> this.getSubscriptions : " + this.getSubscriptions());
+			//System.out.println("unsubscribeSubscriptions >> this.getSubscriptions keySet : " + this.getSubscriptions().keySet());
 			Iterator itr = this.getSubscriptions().entrySet().iterator();
 			while(itr.hasNext())
 			{

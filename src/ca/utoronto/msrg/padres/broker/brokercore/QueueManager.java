@@ -315,6 +315,12 @@ public class QueueManager implements MessageListenerInterface {
 										.getClassVal());
 				brokerCore.subscribeCSStoMigrate((PublicationMessage) msg);
 			}
+				if ((((PublicationMessage) msg).getPublication().getClassVal())
+						.contains("CSStobeMigratedACK")) {
+					System.out.println("QueueManager>>CSStobeMigratedACK: "+msgStr);
+					brokerCore.unsubscribeSubscriptions();
+				    System.out.println("QueueManager>>NotifyMessage:: Final subscription list::  "+brokerCore.getSubscriptions());
+			}
 		}
 		
 		if (msg.getType().equals(MessageType.ADVERTISEMENT)) {
