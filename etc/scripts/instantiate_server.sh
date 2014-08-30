@@ -50,3 +50,11 @@ else
 	ssh -i ~/.ssh/$keyFile $username@$uriLoadAcceptingIP bash "~/$padres_dir/etc/scripts/startnewbroker" -uri $uriLoadAcceptingBrk -n $neighbors -ovl $overloadBrkUri loadbalance > ~/newBroker.txt
 fi
 
+
+exitStatus=`echo $?`
+if [ $exitStatus -eq 0 ]
+then
+  echo "SERVER STARTED SUCCESS!"
+else
+  echo "FAILED"
+fi
