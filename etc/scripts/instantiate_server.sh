@@ -43,10 +43,10 @@ then
 	pwd
 	#java ca.utoronto.msrg.padres.broker.brokercore.BrokerCore -uri $uriLoadAcceptingBrk -n $neighbors -ovl overloadBrkUri loadbalance
 	#sh $PADRES_HOME/etc/scripts/startnewbroker.sh -uri $uriLoadAcceptingBrk -n $neighbors -ovl overloadBrkUri loadbalance	
-	bash $PADRES_HOME/etc/scripts/startnewbroker -uri $uriLoadAcceptingBrk -n $neighbors -ovl $overloadBrkUri loadbalance	
+	bash $PADRES_HOME/etc/scripts/startnewbroker -uri $uriLoadAcceptingBrk -n $neighbors -ovl $overloadBrkUri loadbalance > ~/newBroker.txt
 else
 	# ssh to other server yet to be done
 	echo "Connecting to the new broker in a remote machine"
-	ssh -i ~/.ssh/$keyFile $username@$uriLoadAcceptingIP bash "~/$padres_dir/etc/scripts/startnewbroker" -uri $uriLoadAcceptingBrk -n $neighbors -ovl $overloadBrkUri loadbalance &
+	ssh -i ~/.ssh/$keyFile $username@$uriLoadAcceptingIP bash "~/$padres_dir/etc/scripts/startnewbroker" -uri $uriLoadAcceptingBrk -n $neighbors -ovl $overloadBrkUri loadbalance > ~/newBroker.txt
 fi
 
