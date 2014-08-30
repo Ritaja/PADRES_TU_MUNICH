@@ -59,8 +59,12 @@ public class MediatorImpl extends Client implements Runnable
 			int start = trimmedStr.indexOf("[");
 			int end = trimmedStr.indexOf("]");
 			String keyValue = trimmedStr.substring(start+1, end);
-			String words[] = keyValue.split(",");
-			brokerData.put(words[0], words[1]);
+			
+			int delimiter = keyValue.indexOf(",");
+			brokerData.put(keyValue.substring(0,delimiter), keyValue.substring(delimiter+1));
+			
+			//String words[] = keyValue.split(",");
+			//brokerData.put(words[0], words[1]);
 			trimmedStr = trimmedStr.substring(end+1,trimmedStr.length());
 		}
 		while(trimmedStr.length() != 0);
@@ -133,7 +137,11 @@ public class MediatorImpl extends Client implements Runnable
 			List <String> overloadedBrokerID =  getOverloadedBroker();
 			for (String currBroker : overloadedBrokerID)
 			{
-				if(overloadedList.contains(currBroker) || currBroker.contains("socket://192.168.1.2:1101/BrokerB") || currBroker.contains("socket://192.168.1.2:1100/BrokerA"))
+				if(overloadedList.contains(currBroker) || currBroker.contains("socket://192.168.1.2:1101/BrokerB") 
+						|| currBroker.contains("socket://192.168.1.2:1100/BrokerA")
+						|| currBroker.contains("socket://192.168.1.2:9995/newbrokerA")
+						|| currBroker.contains("socket://192.168.1.2:9996/newbrokerB")
+						|| currBroker.contains("socket://192.168.1.2:9997/newbrokerC"))
 				{
 					continue;
 				}
