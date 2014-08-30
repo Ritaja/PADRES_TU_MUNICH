@@ -30,9 +30,11 @@ public class MediatorImpl extends Client implements Runnable
 	protected static final String CONFIG_FILE_PATH = String.format(
 			"%s/etc/guiclient/client.properties", ClientConfig.PADRES_HOME);
 	
-	protected static final String AVAILABLEBROKERS_PATH = "/home/nishant/git/PADRES_TU_MUNICH/etc/mediator/availablebrokers.properties";
+	protected static final String PADRES_HOME = "/home/sayan/git/PADRES_TU_MUNICH";
 	
-	protected static final String PADRES_HOME = "/home/nishant/git/PADRES_TU_MUNICH";
+	protected static final String AVAILABLEBROKERS_PATH = PADRES_HOME + "/etc/mediator/availablebrokers.properties";
+	
+	
 
 	public MediatorImpl() throws ClientException{
 		// TODO Auto-generated constructor stub
@@ -137,11 +139,11 @@ public class MediatorImpl extends Client implements Runnable
 			List <String> overloadedBrokerID =  getOverloadedBroker();
 			for (String currBroker : overloadedBrokerID)
 			{
-				if(overloadedList.contains(currBroker) || currBroker.contains("socket://192.168.1.2:1101/BrokerB") 
-						|| currBroker.contains("socket://192.168.1.2:1100/BrokerA")
-						|| currBroker.contains("socket://192.168.1.2:9995/newbrokerA")
-						|| currBroker.contains("socket://192.168.1.2:9996/newbrokerB")
-						|| currBroker.contains("socket://192.168.1.2:9997/newbrokerC"))
+				if(overloadedList.contains(currBroker) || currBroker.contains("socket://192.168.1.35:1101/BrokerB") 
+						|| currBroker.contains("socket://192.168.1.35:1100/BrokerA")
+						|| currBroker.contains("socket://192.168.1.35:9995/newbrokerA")
+						|| currBroker.contains("socket://192.168.1.35:9996/newbrokerB")
+						|| currBroker.contains("socket://192.168.1.35:9997/newbrokerC"))
 				{
 					continue;
 				}
@@ -284,6 +286,8 @@ public class MediatorImpl extends Client implements Runnable
 
 	private boolean sshCallToHost(String neighbors, String overloadBrkUri)
 	{	
+		neighbors=neighbors.replace("\"", "");
+		overloadBrkUri=overloadBrkUri.replace("\"", "");
 		System.out.println("inside sshCallToHost");
 		overloadedList.add(overloadBrkUri);
 		System.out.println("Broker added to overLoadedList... New overLoadedList : " + overloadedList);
@@ -330,10 +334,20 @@ public class MediatorImpl extends Client implements Runnable
 
 
 		Runtime run = Runtime.getRuntime();
-
+		
+		//Removing duplicates from neighbors
+		String neighborsFinal = "";
+		String neighArr[] = neighbors.split(",");
+		for (String tempNeighbor : neighArr)
+		{
+			if (!neighborsFinal.contains(tempNeighbor))
+				neighborsFinal = neighborsFinal + "," ; 
+		}
+		neighborsFinal = neighborsFinal.substring(0,neighborsFinal.length()-1);
+		
 		try {			
-			System.out.println("testRun >> ovl broker : " + overloadBrkUri + " **** new broker : " + uriLoadAcceptingBrk +" **** neighbors:"+neighbors);
-			String cmd1 = new String (dir+" "+overloadBrkUri+" "+uriLoadAcceptingBrk+" "+neighbors);
+			System.out.println("testRun >> ovl broker : " + overloadBrkUri + " **** new broker : " + uriLoadAcceptingBrk +" **** neighbors:"+neighborsFinal);
+			String cmd1 = new String (dir+" "+overloadBrkUri+" "+uriLoadAcceptingBrk+" "+neighborsFinal);
 			System.out.println("script to run ******"+cmd1);
 			proc = run.exec(cmd1);
 			proc.waitFor();

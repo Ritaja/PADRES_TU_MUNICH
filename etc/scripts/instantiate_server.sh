@@ -52,6 +52,7 @@ fi
 
 
 exitStatus=`echo $?`
+echo "Exit status of the server process =" $exitStatus
 if [ $exitStatus -eq 0 ]
 then
   echo "SERVER STARTED SUCCESS!"
