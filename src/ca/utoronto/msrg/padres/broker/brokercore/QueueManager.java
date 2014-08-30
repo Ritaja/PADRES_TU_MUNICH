@@ -285,16 +285,16 @@ public class QueueManager implements MessageListenerInterface {
 
 		if (msg.getType().equals(MessageType.PUBLICATION)
 				&& isRecordPublication()) {
-			System.out
-					.println("QueueManager >> notifyMessage >> ((PublicationMessage) msg class : "
-							+ ((PublicationMessage) msg).getPublication()
-									.getClassVal());
+			System.out.println("QueueManager >> notifyMessage >> ((PublicationMessage) msg class : " + ((PublicationMessage) msg).getPublication()
+					.getClassVal());
 			brokerCore.notifyBroker((PublicationMessage) msg);
 		}
 
 		if (msg.getType().equals(MessageType.PUBLICATION)) {
 
 			String msgStr = msg.toString();
+			messagePathLogger.info("<<<<<<<< QueueManager --- notifyMessage ----- Publication||"
+					+ msgStr);
 			System.out
 					.println("<<<<<<<< QueueManager --- notifyMessage ----- Publication||"
 							+ msgStr);

@@ -802,6 +802,7 @@ public class SystemMonitor extends Thread {
 	}
 
 	public void forcePublishBrokerInfo() {
+		System.out.println("SystemMonitor >> inside forcePublishInfo...");
 		brokerInfoPublisher.publishBrokerInfo();
 	}
 

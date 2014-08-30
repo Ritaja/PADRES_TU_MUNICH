@@ -29,6 +29,10 @@ public class MediatorImpl extends Client implements Runnable
 	
 	protected static final String CONFIG_FILE_PATH = String.format(
 			"%s/etc/guiclient/client.properties", ClientConfig.PADRES_HOME);
+	
+	protected static final String AVAILABLEBROKERS_PATH = "/home/nishant/git/PADRES_TU_MUNICH/etc/mediator/availablebrokers.properties";
+	
+	protected static final String PADRES_HOME = "/home/nishant/git/PADRES_TU_MUNICH";
 
 	public MediatorImpl() throws ClientException{
 		// TODO Auto-generated constructor stub
@@ -69,11 +73,36 @@ public class MediatorImpl extends Client implements Runnable
 		brokerMap.put(brokerID, brokerData);
 		System.out.println("\nMediatorImpl >> brokerMap : " + brokerMap + "\n");
 		
-		if(!(overloadedList.contains(brokerID)))
-			initiateOverloadingProcess();
+		System.out.println(" MediatorImpl  <<<<<<<<<< processMessage <<< overloadedlist="+overloadedList);
 
+		if(overloadedList.size() == 0)
+		{
+			System.out.println("calling initiate when overloadedList is empty");
+			initiateOverloadingProcess();
+		}
+		else
+		{
+			int flag = 0;
+			for(int i=0; i<overloadedList.size(); i++)
+			{
+				System.out.println("OverloadedList Element: "+overloadedList.get(i));
+				if(overloadedList.get(i).contains(brokerID))
+				{
+					flag = 1;
+				}
+			}
+			if (flag == 0)
+			{
+				System.out.println("calling initiate");
+				initiateOverloadingProcess();
+			}
+		}
+		
 		if(brokerData.get("STATUS").contains("LOADBALANCE_COMPLETE"))
+		{
 			overloadedList.remove(overloadedList.indexOf(brokerID));
+			System.out.println("MediatorImpl >> STATUS REMOVED >> get(STATUS) : " + brokerData.get("STATUS"));
+		}
 			
 		//System.out.println("Overloaded broker : " + overloadedBrokerID);
 		/*
@@ -98,12 +127,16 @@ public class MediatorImpl extends Client implements Runnable
 	 * @return
 	 */
 
-	public static void initiateOverloadingProcess()
+	public void initiateOverloadingProcess()
 	{
 		try{
 			List <String> overloadedBrokerID =  getOverloadedBroker();
 			for (String currBroker : overloadedBrokerID)
 			{
+				if(overloadedList.contains(currBroker) || currBroker.contains("socket://192.168.1.2:1101/BrokerB") || currBroker.contains("socket://192.168.1.2:1100/BrokerA"))
+				{
+					continue;
+				}
 				HashMap <String, String> tempBroker = brokerMap.get(currBroker);
 				System.out.println("The neighbors are ="+tempBroker.get("NEIGHBORS"));
 				sshCallToHost(tempBroker.get("NEIGHBORS"), currBroker);
@@ -143,34 +176,22 @@ public class MediatorImpl extends Client implements Runnable
 
 					HashMap <String, String> temp = brokerMap.get(entry.getKey());
 					System.out.println("Current broker to change the status to NA ="+temp);
-
-					if ("OK".equals(temp.get("STATUS")))
+					System.out.println("Printing temp......"+temp.get("STATUS"));
+					if ("\"OK\"".equals(temp.get("STATUS")))
 					{
 						overloadedBroker.add(entry.getKey());
 						//temp.remove("STATUS");
 						//temp.put("STATUS", "NA");
 					}
-					else
-					{
-						return overloadedBroker;
-					}
-
 				}				
 			}
-
-			/*Iterator<Map.Entry<String, HashMap<String, String>>> it = brokerMap.entrySet().iterator();
-			while(it.hasNext())
-			{
-				Map.Entry<String, HashMap<String, String>> entry = it.next();
-				if(brokerMap.get(entry.getValue()).get("STATUS").contains("NA"))
-				{
-					return entry.getKey();
-				}		
-			}*/
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		System.out.println("MediatorImpl >> getOverLoadedBroker >> overloadedBroker : " + overloadedBroker);
+		System.out.println("MediatorImpl >> getOverLoadedBroker >> overloadedBroker length: " + overloadedBroker.size());
+		
 		return overloadedBroker;
 	}
 
@@ -253,11 +274,12 @@ public class MediatorImpl extends Client implements Runnable
 	 * @param entry
 	 */
 
-	private static boolean sshCallToHost(String neighbors, String overloadBrkUri)
+	private boolean sshCallToHost(String neighbors, String overloadBrkUri)
 	{	
 		System.out.println("inside sshCallToHost");
 		overloadedList.add(overloadBrkUri);
-		String dir = System.getProperty("user.dir")+"/etc/scripts/instantiate_server.sh";
+		System.out.println("Broker added to overLoadedList... New overLoadedList : " + overloadedList);
+		String dir = PADRES_HOME+"/etc/scripts/instantiate_server.sh";
 		String uriLoadAcceptingBrk = "";
 		boolean result = false;
 		Process proc = null;
@@ -276,6 +298,7 @@ public class MediatorImpl extends Client implements Runnable
 		{
 			System.out.println(" There are no available systems to start loadbalancing");
 			overloadedList.remove(overloadedList.indexOf(overloadBrkUri));
+			System.out.println("Broker removed from overLoadedList.....");
 			return false;
 		}
 		else
@@ -310,15 +333,15 @@ public class MediatorImpl extends Client implements Runnable
 			String error = readStream(proc.getErrorStream());
 			System.out.println(" Input Stream = " + output.trim());
 			System.out.println(" Error Stream = " + error.trim());
-			/*System.out.println(" Input Stream = " + output);
-				System.out.println(" Error Stream = " + error.trim());*/
-			if (null==error || "".equals(error))
+			System.out.println(" Input Stream = " + output);
+			System.out.println(" Error Stream = " + error.trim());
+			if (output.contains("SERVER STARTED SUCCESS"))
 			{
 				result = true;
 				System.out.println("Server "+uriLoadAcceptingBrk+" started properly!!! \n ");
 			}
 			else{
-				overloadedList.remove(overloadedList.indexOf(overloadBrkUri));
+				//overloadedList.remove(overloadedList.indexOf(overloadBrkUri));
 				System.out.println("Server "+uriLoadAcceptingBrk+" could not start properly!!! \n "+error);
 			}
 		} catch (Exception e) {
@@ -340,7 +363,7 @@ public class MediatorImpl extends Client implements Runnable
 		BufferedReader br = null;
 		BufferedWriter bw = null;
 		try {
-			br = new BufferedReader( new FileReader (System.getProperty("user.dir")+"/etc/mediator/availablebrokers.properties"));
+			br = new BufferedReader( new FileReader (AVAILABLEBROKERS_PATH));
 			String tempStr ="", finalStr = "";
 			boolean matched = true;
 			while ((tempStr = br.readLine())!=null)
@@ -363,7 +386,7 @@ public class MediatorImpl extends Client implements Runnable
 				}				
 			}
 
-			bw = new BufferedWriter(new FileWriter(System.getProperty("user.dir")+"/etc/mediator/availablebrokers.properties"));
+			bw = new BufferedWriter(new FileWriter(AVAILABLEBROKERS_PATH));
 			bw.write(finalStr);
 			bw.flush();
 
