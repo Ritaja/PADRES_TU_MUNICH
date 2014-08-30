@@ -15,13 +15,9 @@ package ca.utoronto.msrg.padres.broker.brokercore;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 
@@ -37,10 +33,7 @@ import ca.utoronto.msrg.padres.common.message.MessageDestination;
 import ca.utoronto.msrg.padres.common.message.MessageType;
 import ca.utoronto.msrg.padres.common.message.Predicate;
 import ca.utoronto.msrg.padres.common.message.PublicationMessage;
-import ca.utoronto.msrg.padres.common.message.Subscription;
 import ca.utoronto.msrg.padres.common.message.SubscriptionMessage;
-import ca.utoronto.msrg.padres.common.message.Unsubscription;
-import ca.utoronto.msrg.padres.common.message.parser.MessageFactory;
 
 /**
  * The QueueManager handles the collection of MessageQueues for all destinations
