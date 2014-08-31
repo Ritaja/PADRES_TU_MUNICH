@@ -501,7 +501,7 @@ public class BrokerCore {
 		System.out
 				.println("BrokerCore >> initialize >> initManagementInterface() done");
 		initConsoleInterface();
-		uriForOverLoadedBroker = brokerConfig.overloadURI;
+		this.uriForOverLoadedBroker = brokerConfig.overloadURI;
 
 		Enumeration<NetworkInterface> interfaces;
 		try {
@@ -841,6 +841,7 @@ public class BrokerCore {
 					SubscriptionMessage subMsg = new SubscriptionMessage(sub, this.getNewMessageID(),
 							MessageDestination.INPUTQUEUE);
 					
+					
 					this.routeMessage(subMsg, MessageDestination.INPUTQUEUE);
 
 				} catch (ParseException e) {
@@ -861,7 +862,13 @@ public class BrokerCore {
 		
 		PublicationMessage pubmsg = new PublicationMessage(pubCSSAck,
 				this.getNewMessageID(), this.getBrokerDestination());
-		this.routeMessage(pubmsg, MessageDestination.INPUTQUEUE);
+		//trying to send via connect
+		MessageSender msgSender = commSystem.getMessageSender(this.uriForOverLoadedBroker);
+		msgSender.connect();
+		String msgID = msgSender.send(pubmsg, HostType.SERVER);
+		
+		
+		//this.routeMessage(pubmsg, MessageDestination.INPUTQUEUE);
 		
 		
 		/*String subStr = "[class,eq, CSStobeMigrated"+ uriForOverLoadedBroker.replace(".", "") + "],"
@@ -874,7 +881,7 @@ public class BrokerCore {
 			this.routeMessage(subMsg, MessageDestination.INPUTQUEUE);*/
 				
 			
-		} catch (ParseException e) {
+		} catch (ParseException | CommunicationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

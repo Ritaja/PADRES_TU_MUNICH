@@ -308,15 +308,15 @@ public class QueueManager implements MessageListenerInterface {
 										.getClassVal());
 				brokerCore.subscribeCSStoMigrate((PublicationMessage) msg);
 			}
-				if ((((PublicationMessage) msg).getPublication().getClassVal())
-						.contains("CSStobeMigratedACK")) {
-					System.out.println("QueueManager>>CSStobeMigratedACK: "+msgStr);
-					brokerCore.unsubscribeSubscriptions();
-				    System.out.println("QueueManager>>NotifyMessage:: Final subscription list::  "+brokerCore.getSubscriptions());
-				    this.brokerCore.setStatus("LOADBALANCE_COMPLETE");
-				    this.brokerCore.systemMonitor.forcePublishBrokerInfo();
-				    this.brokerCore.setStatus("OK");
-				    this.brokerCore.systemMonitor.forcePublishBrokerInfo();
+			if ((((PublicationMessage) msg).getPublication().getClassVal())
+					.contains("CSStobeMigratedACK")) {
+				System.out.println("QueueManager>>CSStobeMigratedACK: "+msgStr);
+				brokerCore.unsubscribeSubscriptions();
+			    System.out.println("QueueManager>>NotifyMessage:: Final subscription list::  "+brokerCore.getSubscriptions());
+			    this.brokerCore.setStatus("LOADBALANCE_COMPLETE");
+			    this.brokerCore.systemMonitor.forcePublishBrokerInfo();
+			    this.brokerCore.setStatus("OK");
+			    this.brokerCore.systemMonitor.forcePublishBrokerInfo();
 			}
 		}
 		
