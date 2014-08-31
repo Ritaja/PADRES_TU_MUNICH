@@ -138,8 +138,10 @@ public class MediatorImpl extends Client implements Runnable
 		try{
 			List <String> overloadedBrokerID =  getOverloadedBroker();
 			for (String currBroker : overloadedBrokerID)
-			{
-				if(overloadedList.contains(currBroker) || currBroker.contains("socket://192.168.1.35:1101/BrokerB") 
+			{				
+				System.out.println("MediatorImpl----currBroker="+currBroker);
+				System.out.println("Are you serious?"+matchString(overloadedList,currBroker));
+				if( matchString(overloadedList,currBroker) || currBroker.contains("socket://192.168.1.35:1101/BrokerB") 
 						|| currBroker.contains("socket://192.168.1.35:1100/BrokerA")
 						|| currBroker.contains("socket://192.168.1.35:9995/newbrokerA")
 						|| currBroker.contains("socket://192.168.1.35:9996/newbrokerB")
@@ -158,6 +160,22 @@ public class MediatorImpl extends Client implements Runnable
 		}
 	}
 
+	public boolean matchString( List<String> overLoadBrkList, String overloadBrk)
+	{
+		if (overloadBrk.contains("\""))
+		{
+			overloadBrk = overloadBrk.replaceAll("\"", "");					
+		}
+		for (String tempBrk: overLoadBrkList)
+		{
+			if(overloadBrk.equals(tempBrk))
+				return true;
+		}
+		
+		return false;
+		
+	}
+	
 	/**
 	 * This function analyzes the information sent by all brokers and returns the broker which is overloaded
 	 * @return
@@ -286,7 +304,8 @@ public class MediatorImpl extends Client implements Runnable
 
 	private boolean sshCallToHost(String neighbors, String overloadBrkUri)
 	{	
-		neighbors=neighbors.replace("\"", "");
+		
+		neighbors=neighbors.substring(1,neighbors.length()-1);
 		overloadBrkUri=overloadBrkUri.replace("\"", "");
 		System.out.println("inside sshCallToHost");
 		overloadedList.add(overloadBrkUri);
@@ -337,12 +356,16 @@ public class MediatorImpl extends Client implements Runnable
 		
 		//Removing duplicates from neighbors
 		String neighborsFinal = "";
-		String neighArr[] = neighbors.split(",");
-		for (String tempNeighbor : neighArr)
+		
+				
+		String neighborArr [] = neighbors.split(",");
+		for (String tempStr: neighborArr)
 		{
-			if (!neighborsFinal.contains(tempNeighbor))
-				neighborsFinal = neighborsFinal + "," ; 
+			if (!neighborsFinal.contains(tempStr))
+				neighborsFinal = neighborsFinal  + tempStr + ","; 
 		}
+		
+		
 		neighborsFinal = neighborsFinal.substring(0,neighborsFinal.length()-1);
 		
 		try {			
@@ -355,8 +378,7 @@ public class MediatorImpl extends Client implements Runnable
 			String error = readStream(proc.getErrorStream());
 			System.out.println(" Input Stream = " + output.trim());
 			System.out.println(" Error Stream = " + error.trim());
-			System.out.println(" Input Stream = " + output);
-			System.out.println(" Error Stream = " + error.trim());
+
 			if (output.contains("SERVER STARTED SUCCESS"))
 			{
 				result = true;
