@@ -802,6 +802,7 @@ public class SystemMonitor extends Thread {
 	}
 
 	public void forcePublishBrokerInfo() {
+		System.out.println("SystemMonitor >> inside forcePublishInfo...");
 		brokerInfoPublisher.publishBrokerInfo();
 	}
 
@@ -909,8 +910,11 @@ public class SystemMonitor extends Thread {
 		}
 		int numberOfNeighbours = ((Set) brokerInfo.get(NEIGBOURS)).size();
 		int numberOfClients = ((Set) brokerInfo.get(CLIENTS)).size();
-		String status = "OK";	// For indicating broker's status for load balancing.. 
-	//	Map <String, SubscriptionMessage> cSS_Subscribed = brokerCore.getSubscriptions();
+		
+		String status = this.brokerCore.getStatus();	// For indicating broker's status for load balancing.. 
+	
+		
+		//	Map <String, SubscriptionMessage> cSS_Subscribed = brokerCore.getSubscriptions();
 		
 		String neighborsStr = "";
 	
@@ -1021,7 +1025,8 @@ public class SystemMonitor extends Thread {
 		
 		while(itr.hasNext())
 		{
-			neighborsStr = neighborsStr + itr.next() + ",";
+			System.out.println(" Itr ="+neighborsStr);
+			neighborsStr = neighborsStr.replace("\"", "") + itr.next() + ",";
 		}
 		
 		System.out.println("Neighbors*************="+ neighborsStr);
@@ -1029,9 +1034,11 @@ public class SystemMonitor extends Thread {
 		if (neighborsStr.length() > 0)
 		{
 			neighborsStr = neighborsStr.substring(0, neighborsStr.length()-1);
-		}		
+		}
 		
-		performanceLogger.debug("Neighbors*************="+ neighborsStr);
+		System.out.println("SystemMonitor -------- makeInfoPubMsg ------finalNeighbor String ="+neighborsStr);
+		
+		performanceLogger.info("Neighbors*************="+ neighborsStr);
 		// Run a loop to extract all the subscriptions of the broker
 		
 		/*	String externalSubsMsgs = "";
@@ -1508,7 +1515,7 @@ public class SystemMonitor extends Thread {
 		try {
 			System.out.println("<<<<<<< advertisement class is CSStobeMigrated"+ getBrokerID().replace(".", ""));
 			adv = MessageFactory.createAdvertisementFromString("[class,eq,CSStobeMigrated"+getBrokerID().replace(".", "") + "],"
-					+ "[CSSList,isPresent,'Dummy'],"); 
+					+"[Accepter,isPresent,'Dummy'],"+ "[CSSList,isPresent,'Dummy']"); 
 					//+ "[from,isPresent,'" + getBrokerID() + "'],");
 			
 		} catch (ParseException e) {

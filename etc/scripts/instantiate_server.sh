@@ -13,14 +13,21 @@ fi
 # echo arguments
 overloadBrkUri=$1
 uriLoadAcceptingBrk=$2
+echo "LoadAccepting Broker URI=" $uriLoadAcceptingBrk
+uriLoadAcceptingPort=`echo $uriLoadAcceptingBrk | cut -d"/" -f3 | cut -d":" -f2`
+uriLoadAcceptingIP=`echo $uriLoadAcceptingBrk | cut -d"/" -f3 | cut -d":" -f1`
+echo "LoadAccepting Broker IP" $uriLoadAcceptingIP
+echo "LoadAccepting Broker port" $uriLoadAcceptingPort
 neighbors=$3
 searchstr="localhost"
-echo "Current directory=" 
-pwd
+username="topscale"
+keyFile=`echo $uriLoadAcceptingBrk | cut -d"/" -f3 | cut -d":" -f1 | cut -d"." -f1`
+echo "Key File =" $keyFile
+echo "Current directory=" `pwd`
 PADRES_HOME="$(cd $(dirname "$0")/../.. && pwd)"
 export PADRES_HOME
 echo "####PADRES_HOME=" $PADRES_HOME "   "
- 
+padres_dir="PADRES_TU_MUNICH"
 typeOnConn=""
 echo "SSH client starts.............."
 echo " instantiate_server.sh >> Connecting to ...:" $uriLoadAcceptingBrk
@@ -36,9 +43,19 @@ then
 	pwd
 	#java ca.utoronto.msrg.padres.broker.brokercore.BrokerCore -uri $uriLoadAcceptingBrk -n $neighbors -ovl overloadBrkUri loadbalance
 	#sh $PADRES_HOME/etc/scripts/startnewbroker.sh -uri $uriLoadAcceptingBrk -n $neighbors -ovl overloadBrkUri loadbalance	
-	bash $PADRES_HOME/etc/scripts/startnewbroker -uri $uriLoadAcceptingBrk -n $neighbors -ovl $overloadBrkUri loadbalance	
+	bash $PADRES_HOME/etc/scripts/startnewbroker -uri $uriLoadAcceptingBrk -n $neighbors -ovl $overloadBrkUri loadbalance > ~/newBroker.txt
 else
 	# ssh to other server yet to be done
 	echo "Connecting to the new broker in a remote machine"
-	ssh $username@$hostname java -jar ../../ms3-server.jar $port INFO 
+	ssh -i ~/.ssh/$keyFile $username@$uriLoadAcceptingIP bash "~/$padres_dir/etc/scripts/startnewbroker" -uri $uriLoadAcceptingBrk -n $neighbors -ovl $overloadBrkUri loadbalance > ~/newBroker.txt
+fi
+
+
+exitStatus=`echo $?`
+echo "Exit status of the server process =" $exitStatus
+if [ $exitStatus -eq 0 ]
+then
+  echo "SERVER STARTED SUCCESS!"
+else
+  echo "FAILED"
 fi

@@ -71,6 +71,8 @@ public class BrokerInfoPublisher extends Thread {
 
 		while (isRunning()) {
 			System.out.println("publishBrokerInfo : " + publishBrokerInfo);
+			System.out.println("***********************************************************************************"
+					+ "****************************************************************************************");
 			if (!publishBrokerInfo)
 			{
 				stopPublishing();

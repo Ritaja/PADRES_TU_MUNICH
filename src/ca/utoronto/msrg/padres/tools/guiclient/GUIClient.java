@@ -223,19 +223,42 @@ public class GUIClient extends Client implements ActionListener {
 	}
 
 	protected void processUserInput() {
-		CommandResult results;
+		CommandResult results = null;
 		try {
-			results = handleCommand(input.getText());
+			String inputStr = input.getText();
+			/* -------------- Testing Purpose -------------------- */
+			if(inputStr.contains("floodPubs"))
+			{
+				String subStr = inputStr.substring(inputStr.indexOf("floodPubs"));
+				String[] splitStr = subStr.split(" ");
+				inputStr = inputStr.replace(subStr, "");
+				for(int i=0; i<Integer.parseInt(splitStr[1]); i++)
+				{
+					inputStr = inputStr.replace("value,"+i, "value,"+(i+1));
+					results = handleCommand(inputStr);
+					printClientAction(results.cmdString, Color.BLACK);
+					if (results.isError()) {
+						printClientAction(results.errMsg, Color.RED);
+					} else {
+						printClientAction(results.resString, Color.BLUE);
+					}
+				}
+			}
+			/* --------------------------------------------------------------- */
+			else
+			{
+				results = handleCommand(inputStr);
+				printClientAction(results.cmdString, Color.BLACK);
+				if (results.isError()) {
+					printClientAction(results.errMsg, Color.RED);
+				} else {
+					printClientAction(results.resString, Color.BLUE);
+				}
+			}
 		} catch (ParseException e) {
 			e.printStackTrace();
 			exceptionLogger.error(e);
 			return;
-		}
-		printClientAction(results.cmdString, Color.BLACK);
-		if (results.isError()) {
-			printClientAction(results.errMsg, Color.RED);
-		} else {
-			printClientAction(results.resString, Color.BLUE);
 		}
 	}
 
