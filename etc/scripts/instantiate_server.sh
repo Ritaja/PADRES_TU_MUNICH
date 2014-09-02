@@ -42,12 +42,14 @@ then
 	echo -e "###Connecting to the new broker in the localhost####\n"			
 	pwd
 	#java ca.utoronto.msrg.padres.broker.brokercore.BrokerCore -uri $uriLoadAcceptingBrk -n $neighbors -ovl overloadBrkUri loadbalance
-	#sh $PADRES_HOME/etc/scripts/startnewbroker.sh -uri $uriLoadAcceptingBrk -n $neighbors -ovl overloadBrkUri loadbalance	
-	bash $PADRES_HOME/etc/scripts/startnewbroker -uri $uriLoadAcceptingBrk -n $neighbors -ovl $overloadBrkUri loadbalance > ~/newBroker.txt
+	#sh $PADRES_HOME/etc/scripts/startnewbroker.sh -uri $uriLoadAcceptingBrk -n $neighbors -ovl overloadBrkUri loadbalance
+	touch ~/newBroker_"$uriLoadAcceptingIP""$uriLoadAcceptingPort".txt	
+	bash $PADRES_HOME/etc/scripts/startnewbroker -uri $uriLoadAcceptingBrk -n $neighbors -ovl $overloadBrkUri loadbalance > ~/newBroker_"$uriLoadAcceptingIP""$uriLoadAcceptingPort".txt
 else
 	# ssh to other server yet to be done
 	echo "Connecting to the new broker in a remote machine"
-	ssh -i ~/.ssh/$keyFile $username@$uriLoadAcceptingIP bash "~/$padres_dir/etc/scripts/startnewbroker" -uri $uriLoadAcceptingBrk -n $neighbors -ovl $overloadBrkUri loadbalance > ~/newBroker.txt
+	touch ~/newBroker_"$uriLoadAcceptingIP""$uriLoadAcceptingPort".txt
+	ssh -i ~/.ssh/$keyFile $username@$uriLoadAcceptingIP bash "~/$padres_dir/etc/scripts/startnewbroker" -uri $uriLoadAcceptingBrk -n $neighbors -ovl $overloadBrkUri loadbalance > ~/newBroker_"$uriLoadAcceptingIP""$uriLoadAcceptingPort".txt
 fi
 
 
