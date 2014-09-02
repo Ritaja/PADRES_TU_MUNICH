@@ -106,7 +106,8 @@ public class MediatorImpl extends Client implements Runnable
 		
 		if(brokerData.get("STATUS").contains("LOADBALANCE_COMPLETE"))
 		{
-			overloadedList.remove(overloadedList.indexOf(brokerID));
+			//TODO: yet to be tested ..probable null pointer.
+			overloadedList.remove(overloadedList.indexOf(brokerID.substring(1, brokerID.length()-1)));
 			System.out.println("MediatorImpl >> STATUS REMOVED >> get(STATUS) : " + brokerData.get("STATUS"));
 		}
 			
@@ -138,9 +139,7 @@ public class MediatorImpl extends Client implements Runnable
 		try{
 			List <String> overloadedBrokerID =  getOverloadedBroker();
 			for (String currBroker : overloadedBrokerID)
-			{				
-				System.out.println("MediatorImpl----currBroker="+currBroker);
-				System.out.println("Are you serious?"+matchString(overloadedList,currBroker));
+			{
 				if( matchString(overloadedList,currBroker) || currBroker.contains("socket://192.168.1.35:1101/BrokerB") 
 						|| currBroker.contains("socket://192.168.1.35:1100/BrokerA")
 						|| currBroker.contains("socket://192.168.1.35:9995/newbrokerA")
