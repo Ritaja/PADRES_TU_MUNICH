@@ -20,18 +20,13 @@ package ca.utoronto.msrg.padres.broker.monitor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.Serializable;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.swing.Timer;
@@ -40,7 +35,6 @@ import org.apache.log4j.Logger;
 
 import ca.utoronto.msrg.padres.broker.brokercore.BrokerCore;
 import ca.utoronto.msrg.padres.broker.controller.OverlayRoutingTable;
-import ca.utoronto.msrg.padres.common.comm.CommunicationException;
 import ca.utoronto.msrg.padres.common.comm.MessageQueue;
 import ca.utoronto.msrg.padres.common.comm.OutputQueue;
 import ca.utoronto.msrg.padres.common.message.Advertisement;
@@ -135,6 +129,18 @@ public class SystemMonitor extends Thread {
 	protected long[] startTimes;
 
 	protected long[] messageCounts;
+	
+	
+	//Counter to count messages
+	protected long msgCount = 0L;
+	
+	protected long ctrlMsgCount = 0L;
+	
+	protected long startTimePubMsg = 0L;
+
+	protected long startTimeCtrlMsg = 0L;
+	
+	
 
 	protected static final Object rateMutex = new Object();
 
@@ -246,6 +252,12 @@ public class SystemMonitor extends Thread {
 			startTimes[CONTROL_MESSAGES] = new Date().getTime();
 			messageCounts[PUBLICATION_MESSAGES] = 0;
 			messageCounts[CONTROL_MESSAGES] = 0;
+			
+			startTimePubMsg = new Date().getTime();
+
+			startTimeCtrlMsg = new Date().getTime();
+			
+			
 
 			// Initialize timing variables
 			queueTimeManager = new QueueTimeManager();
@@ -1072,10 +1084,14 @@ public class SystemMonitor extends Thread {
 		performanceLogger.debug("***All subscription classes ="+allSubClasses);
 		performanceLogger.debug("Subscription messages in the brokercore ####"+externalSubsMsgs);						
 	*/
+		// Do calculations for incoming PubMsgRate and ControlMsgRate
+		float incPubRate = calculateIncomingPubRate(); // Maintaining a number of 75 for this category is safe for the broker. Experimental values show 147 before it breaks down. 
+		float incCtrlMsgRate = calculateIncomingCtrlMsgRate();
+		getProcessingTimes();
 		
 		String brokerInformation = "[class,BROKER_INFO]," + "[brokerID,'" + getBrokerID()
 				+ "']," + "[averageMatchTime,'"+averageMatchTime+"'],"+"[averageQueueTime,'"+averageQueueTime+"'],"+
-				"[incomingPubMsgRate,'"+incomingPubMsgRate+"'],"+"[incomingControlMsgRate,'"+incomingControlMsgRate+"'],"
+				"[incomingPubMsgRate,'"+incPubRate+"'],"+"[incomingControlMsgRate,'"+incCtrlMsgRate+"'],"
 				+"[freeMemory,'"+freeMemory+"'],"+"[numberOfAdvs,'"+numberOfAdvs+"'],"+"[numberOfSubs,'"+numberOfSubs+"'],"
 				+"[numberOfNeighbours,'"+numberOfNeighbours+"'],"+"[numberOfClients,'"+numberOfClients+"'],"
 				+"[STATUS,'"+status+"'],"+"[NEIGHBORS,'"+neighborsStr+"']";
@@ -1090,7 +1106,71 @@ public class SystemMonitor extends Thread {
 		System.out.println("SystemMonitor >> makeInfoPubMsg >> Publication Message going to be sent : " + pubmsg);
 		return pubmsg;
 	}
+	
+	// New revised method to calculate the publication messages processed per second
+	
+	public float calculateIncomingPubRate()
+	{
 
+		float publicationRate;
+		long elapsedTime;
+		
+		synchronized (rateMutex) {
+			// Calculate the publication rate
+			elapsedTime = (new Date()).getTime() - startTimePubMsg;
+
+			if (elapsedTime <= 0) {
+				publicationRate = 0;
+			} else {
+				/*publicationRate = Math.round(  msgCount / elapsedTime
+						* 1000);*/
+				publicationRate = ( (float)msgCount / elapsedTime
+						* 1000);
+			}
+			System.out.println("calculateIncomingPubRate | The pub rate is ="+publicationRate +" The pub message counts are="+msgCount
+					+" elapseTime=" + elapsedTime);
+			
+			// reset all counters
+			startTimePubMsg = new Date().getTime();
+			msgCount = 0;
+		}
+		
+		return publicationRate;
+	
+	}
+	
+	// New revised method to calculate the rate of messages processed per second
+	
+	public float calculateIncomingCtrlMsgRate()
+	{
+
+		float publicationRate;
+		long elapsedTime;
+		
+		synchronized (rateMutex) {
+			// Calculate the publication rate
+			elapsedTime = (new Date()).getTime() - startTimeCtrlMsg;
+
+			if (elapsedTime <= 0) {
+				publicationRate = 0;
+			} else {
+				/*publicationRate = Math.round(  ctrlMsgCount / elapsedTime
+						* 1000);*/
+				publicationRate = ((float) ctrlMsgCount / elapsedTime
+						* 1000);
+			}
+			System.out.println("calculateIncomingCtrlMsgRate | The pub rate is ="+publicationRate +" The control message counts are="+ctrlMsgCount
+					+" elapseTime=" + elapsedTime);
+			
+			// reset all counters
+			startTimeCtrlMsg = new Date().getTime();
+			ctrlMsgCount = 0;
+		}
+		
+		return publicationRate;
+	
+	}
+	
 	/*
 	 * The following is code that supports getting of incoming publication rate and control message
 	 * rate ----------------------------- START -------------------------------
@@ -1107,7 +1187,7 @@ public class SystemMonitor extends Thread {
 	public long getPublicationMessageRate() {
 		long publicationRate;
 		long elapsedTime;
-
+		
 		synchronized (rateMutex) {
 			// Calculate the publication rate
 			elapsedTime = (new Date()).getTime() - startTimes[PUBLICATION_MESSAGES];
@@ -1118,12 +1198,15 @@ public class SystemMonitor extends Thread {
 				publicationRate = Math.round(messageCounts[PUBLICATION_MESSAGES] / elapsedTime
 						* 1000);
 			}
-
+			System.out.println("getPublicationMessageRate | The pub rate is ="+publicationRate +" The pub message counts are="+PUBLICATION_MESSAGES
+					+" elapseTime=" + elapsedTime + " messageCounts[PUBLICATION_MESSAGES]="+messageCounts[PUBLICATION_MESSAGES]+
+					" number="+msgCount);
+			
 			// reset all counters
 			startTimes[PUBLICATION_MESSAGES] = new Date().getTime();
 			messageCounts[PUBLICATION_MESSAGES] = 0;
 		}
-
+		
 		return publicationRate;
 	}
 
@@ -1141,18 +1224,22 @@ public class SystemMonitor extends Thread {
 		synchronized (rateMutex) {
 			// Calculate the publication rate
 			elapsedTime = (new Date()).getTime() - startTimes[CONTROL_MESSAGES];
-
+			
 			if (elapsedTime <= 0) {
 				publicationRate = 0;
 			} else {
-				publicationRate = Math.round(messageCounts[CONTROL_MESSAGES] / elapsedTime * 1000);
+				//publicationRate = Math.round(messageCounts[CONTROL_MESSAGES] / elapsedTime * 1000);
+				publicationRate = messageCounts[CONTROL_MESSAGES] / elapsedTime * 1000;
 			}
-
+			System.out.println("getControlMessageRate | The controlpub rate is ="+publicationRate +" The pub message counts are="+PUBLICATION_MESSAGES
+					+" elapseTime=" + elapsedTime + " messageCounts[CONTROL_MESSAGES]=" + messageCounts[PUBLICATION_MESSAGES]+
+					" number="+ctrlMsgCount);
 			// reset all counters
 			startTimes[CONTROL_MESSAGES] = new Date().getTime();
 			messageCounts[CONTROL_MESSAGES] = 0;
 		}
-
+		
+		
 		return publicationRate;
 	}
 
@@ -1163,18 +1250,32 @@ public class SystemMonitor extends Thread {
 	 * class/topic set to "BROKER_CONTROL" will also be considered control messages.
 	 */
 	public void countMessage(Message message) {
+		System.out.println("Queue Manager | inside countMessage!! | Message entered="+message.toString());
 		MessageType messageType = message.getType();
 
 		synchronized (rateMutex) {
 			// Publication Message
-			if (messageType == MessageType.PUBLICATION) {
+			System.out.println("Inside synchronized block ....value of message="+messageType.toString());
+			if (messageType.toString().equalsIgnoreCase("PublicationMessage")) {
 				if (isControlMessage((PublicationMessage) message))
+				{
+					System.out.println("Pub message.... included in control"+message.toString());
+					ctrlMsgCount++;
 					messageCounts[CONTROL_MESSAGES]++;
+					System.out.println("Are we counting? messageCounts[CONTROL_MESSAGES]" + messageCounts[CONTROL_MESSAGES]);
+				}					
 				else
+				{
+					System.out.println("Previous value" + msgCount+" For message="+message.toString());
+					msgCount++;
 					messageCounts[PUBLICATION_MESSAGES]++;
+					System.out.println("Are we counting? messageCounts[PUBLICATION_MESSAGES]" + msgCount);
+				}					
 			}
 			// All other messages are considered control messages
 			else {
+				System.out.println("Not pub message.... included in control"+message.toString());
+				ctrlMsgCount++;
 				messageCounts[CONTROL_MESSAGES]++;
 			}
 		}
@@ -1191,7 +1292,9 @@ public class SystemMonitor extends Thread {
 					|| value.equalsIgnoreCase(SystemMonitor.MESSAGE_CLASS)
 					|| value.equalsIgnoreCase(TRACEROUTE_MESSAGE_KEY)
 					|| value.equalsIgnoreCase("NETWORK_DISCOVERY")
-					|| value.equalsIgnoreCase("GLOBAL_FD")) {
+					|| value.equalsIgnoreCase("GLOBAL_FD") 
+					|| value.equalsIgnoreCase("BROKER_INFO")) {
+				
 				return true;
 			}
 		}
